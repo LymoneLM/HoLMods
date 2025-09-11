@@ -4,7 +4,7 @@ using BepInEx.Configuration;
 
 namespace BetterStorage
 {
-    [BepInPlugin("cc.lymone.HoL.BetterStorage", "BetterStorage", "1.0.0")]
+    [BepInPlugin("cc.lymone.HoL.BetterStorage", "BetterStorage", "1.1.0")]
     public class BetterStorage : BaseUnityPlugin
     {
         private static ConfigEntry<int> KuFangConfig;
@@ -12,8 +12,12 @@ namespace BetterStorage
 
         private void Start()
         {
-            KuFangConfig = Config.Bind<int>("Config", "KuFang_Multiplier", 100, "库房库存倍率");
-            HorseRoomConfig = Config.Bind<int>("Config", "HorseRoom_Multiplier", 10, "马厩大小倍率");
+            KuFangConfig = Config.Bind<int>("配置 Config", "库房容量倍率 Warehouse Capacity Multiplier", 100, 
+                "只会影响新建/新拆的建筑\n" +
+                "Only affects newly built/delete buildings");
+            HorseRoomConfig = Config.Bind<int>("配置 Config", "马厩容量倍率 Barn Capacity Multiplier", 10, 
+                "只会影响新建/新拆的建筑\n" +
+                "Only affects newly built/delete buildings");
             Harmony.CreateAndPatchAll(typeof(BetterStorage));
         }
 
