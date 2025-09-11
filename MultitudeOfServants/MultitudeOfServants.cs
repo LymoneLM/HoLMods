@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MultitudeOfServants
 {
-    [BepInPlugin("cc.lymone.HoL.MultitudeOfServants", "MultitudeOfServants", "1.1.0")]
+    [BepInPlugin("cc.lymone.HoL.MultitudeOfServants", "MultitudeOfServants", "1.2.0")]
     public class MultitudeOfServants: BaseUnityPlugin
     {
         private static ConfigEntry<int> XiangFangConfig;
@@ -17,9 +17,9 @@ namespace MultitudeOfServants
 
         private void Start()
         {
-            XiangFangConfig = Config.Bind("Config", "XiangFang_Multiplier", 10, "厢房居住仆人倍率");
-            GongZiConfig = Config.Bind<float>("Config", "GongZi_Multiplier", 1.0f, "仆人工资倍率");
-            PuRenMaxConfig = Config.Bind("Config", "PuRen_Max_Multiplier", 1, "仆人上限倍率");
+            XiangFangConfig = Config.Bind("配置 Config", "厢房居住仆人倍率 Servant Quarters Capacity Multiplier", 10, "");
+            GongZiConfig = Config.Bind<float>("配置 Config", "仆人工资倍率 Servant Wage Multiplier", 1.0f, "");
+            PuRenMaxConfig = Config.Bind("配置 Config", "仆人上限倍率 Servant Cap Multiplier", 1, "");
             Harmony.CreateAndPatchAll(typeof(MultitudeOfServants));
         }
 
