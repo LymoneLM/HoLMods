@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace TooManyStudent
 {
-    [BepInPlugin("cc.lymone.HoL.TooManyStudent", "TooManyStudent", "1.0.0")]
+    [BepInPlugin("cc.lymone.HoL.TooManyStudent", "TooManyStudent", "1.1.0")]
     public class TooManyStudent : BaseUnityPlugin
     {
         private static ConfigEntry<int> TeacherConfig;
@@ -13,8 +13,10 @@ namespace TooManyStudent
 
         private void Start()
         {
-            TeacherConfig = Config.Bind<int>("Config", "Teacher_Multiplier", 2, "教师数量乘数");
-            StudentConfig = Config.Bind<int>("Config", "Student_Multiplier", 2, "学生容量乘数");
+            TeacherConfig = Config.Bind<int>("配置 Config", "教师数量乘数 Teacher Multiplier", 2,
+                "对两个学校都适用 Applicable to both schools");
+            StudentConfig = Config.Bind<int>("配置 Config", "学生容量乘数 Student Multiplier", 2,
+                "对两个学校都适用 Applicable to both schools");
             Harmony.CreateAndPatchAll(typeof(TooManyStudent));
         }
 
