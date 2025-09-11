@@ -12,13 +12,14 @@
 
 **手动安装** **Manual**
 
-1. 首先需要安装[BepInExPack](https://thunderstore.io/c/house-of-legacy/p/BepInEx/BepInExPack/)
-2. 使用本包中BepInEx文件夹覆盖游戏根目录BepInEx文件夹
+- 首先需要安装[BepInExPack](https://thunderstore.io/c/house-of-legacy/p/BepInEx/BepInExPack/)
+- 使用本包中BepInEx文件夹覆盖游戏根目录BepInEx文件夹
 
 
 
-1. First, install [BepInExPack](https://thunderstore.io/c/house-of-legacy/p/BepInEx/BepInExPack/)
-2. Overwrite the BepInEx folder in the game's root directory with the one from this package
+
+- First, install [BepInExPack](https://thunderstore.io/c/house-of-legacy/p/BepInEx/BepInExPack/)
+- Overwrite the BepInEx folder in the game's root directory with the one from this package
 
 ## 🛠 配置 Configuration
 
