@@ -1,0 +1,9 @@
+{
+    "name": "MultitudeOfServants",
+    "version_number": "1.2.0",
+    "website_url": "https://github.com/LymoneLM/HoLMods",
+    "description": "提高建筑仆人容量，提供降低工资和提高上限的配置。Increase building servant capacity, with configurations to reduce wages and raise the cap.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}
