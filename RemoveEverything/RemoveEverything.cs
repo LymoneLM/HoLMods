@@ -12,7 +12,7 @@ namespace RemoveEverything
     public class RemoveEverything : BaseUnityPlugin
     {
         private static ConfigEntry<bool> isSafeRemoveStorage;
-        private static ConfigEntry<bool> switchChangShuGeRemoveStrategy;
+        private static ConfigEntry<bool> ChangShuGeRemoveStrategy;
 
 
         private void Start()
@@ -21,12 +21,10 @@ namespace RemoveEverything
                 "是否安全移除仓储(如果为true，将确保仓储和马厩不为负)\n" +
                 "开启此选项可能会导致部分建筑不会被删除\n" +
                 "注意：仓储容量为负不会导致存档损坏，随后补充容量即可");
-            switchChangShuGeRemoveStrategy = Config.Bind<bool>("配置 Config", "藏书阁移除策略 Library Remove Strategy", true, 
+            ChangShuGeRemoveStrategy = Config.Bind<bool>("配置 Config", "是否强行保留书籍 Force keep the books", true,
                 "切换藏书阁移除时，处理正在借阅书籍的策略\n" +
-                "true :正在被借阅的书籍将被强制索要，纳入仓库。\n" +
-                "      此人的阅读进度损失，但是书籍得以保留。\n" +
-                "false:正在被借阅的书籍会赠送给借读的人，并且此人的借阅策略会重置为空\n" +
-                "      书籍会损失，但是此人的学习进度得以保留。\n");
+                "true :强行将书籍纳入库存，但借阅人正常阅读，相当于刷了一本书（微作弊）\n" +
+                "false:书籍被赠与借阅者，家族损失该书籍（正常流程）\n");
             Harmony.CreateAndPatchAll(typeof(RemoveEverything));
         }
 
@@ -156,12 +154,13 @@ namespace RemoveEverything
                     // 藏书阁
                     if(BookStr.Count != 0)
                     {
+                        var Library = new HashSet<string>();
                         var stockBook = new Dictionary<string, int>();
-                        var lendBook = new Dictionary<string, int>();
                         foreach (var line in BookStr)
                         {
                             // 分割主要部分
                             List<string> Categories = line.Split('|').ToList();
+                            Library.Add(Categories[0]);
                             Categories.RemoveAt(0);
                             foreach (var category in Categories)
                             {
@@ -180,11 +179,11 @@ namespace RemoveEverything
                                             stockBook[values[0]] = 0;
                                         stockBook[values[0]] += int.Parse(values[1]);
                                     }
-                                    if (int.Parse(values[2]) > 0)
+                                    if (int.Parse(values[2]) > 0 && ChangShuGeRemoveStrategy.Value)
                                     {
-                                        if (!lendBook.ContainsKey(values[0]))
-                                            lendBook[values[0]] = 0;
-                                        lendBook[values[0]] += int.Parse(values[2]);
+                                        if (!stockBook.ContainsKey(values[0]))
+                                            stockBook[values[0]] = 0;
+                                        stockBook[values[0]] += int.Parse(values[1]);
                                     }
                                 }
                             }
@@ -209,23 +208,17 @@ namespace RemoveEverything
                             Mainload.FamilyData[5] = (int.Parse(Mainload.FamilyData[5]) - i.Value).ToString();
                         }
                         // 出借书处理
-                        // 尝试转移书籍到其他府邸藏书阁
-                        //if(Mainload.CangShuGeData_Now.Count > 1)
-                        //{
-                        //    for(int i = 0; i < Mainload.CangShuGeData_Now.Count; i++)
-                        //    {
-                        //        if (i == SceneIndex || Mainload.CangShuGeData_Now[i].Count == 0)
-                        //            continue;
-                        //    }
-                        //}
-                        if (switchChangShuGeRemoveStrategy.Value)
+                        for (int i=0; i < Mainload.Member_now.Count; i++)
                         {
-                            //策略1
+                            var str = Mainload.Member_now[i][19].Split('~')[0];
+                            if (Library.Contains(str.Split('@')[2]))
+                            {
+                                string text = str[0] + "@" + str[1] + "@" + "null";
+                                text = text + "~" + Mainload.Member_now[i][19].Split('~')[1];
+                                Mainload.Member_now[i][19] = text;
+                            }
                         }
-                        else
-                        {
-                            //策略2
-                        }
+
                     }    
                     yield return null;
 
