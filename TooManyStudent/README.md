@@ -21,7 +21,7 @@
 - First, install [BepInExPack](https://thunderstore.io/c/house-of-legacy/p/BepInEx/BepInExPack/)
 - Overwrite the BepInEx folder in the game's root directory with the one from this package
 
-## 🛠 配置 Configuration
+## ❓ 配置 Configuration
 
 运行一次游戏后生成配置，位于：
 

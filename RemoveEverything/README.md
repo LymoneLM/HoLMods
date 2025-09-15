@@ -14,7 +14,7 @@ An optional fast mode toggle is provided in the configuration. If you feel the d
 
 If you have any questions, suggestions, or encounter bugs, feel free to join our [Discor Server](https://discord.gg/5ubSTurmBe) for discussion.
 
-## ❓︎问题解答 FAQ
+## ❓问题解答 FAQ
 
 ### 1.为什么拆除完我的府邸环境、安全、便捷值为负了？
 
@@ -67,7 +67,7 @@ Yes, absolutely. However, make sure to back up your save file before using it! A
 - First, install [BepInExPack](https://thunderstore.io/c/house-of-legacy/p/BepInEx/BepInExPack/)
 - Overwrite the BepInEx folder in the game's root directory with the one from this package
 
-## 🛠 配置 Configuration
+## 🔧 配置 Configuration
 
 运行一次游戏后生成配置，位于：
 
