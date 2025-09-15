@@ -4,7 +4,7 @@ using BepInEx.Configuration;
 
 namespace BetterStorage
 {
-    [BepInPlugin("cc.lymone.HoL.BetterStorage", "BetterStorage", "1.1.0")]
+    [BepInPlugin("cc.lymone.HoL.BetterStorage", "BetterStorage", "1.2.0")]
     public class BetterStorage : BaseUnityPlugin
     {
         private static ConfigEntry<int> KuFangConfig;

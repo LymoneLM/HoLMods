@@ -1,6 +1,6 @@
 {
     "name": "BetterStorage",
-    "version_number": "1.1.0",
+    "version_number": "1.2.0",
     "website_url": "https://github.com/LymoneLM/HoLMods",
     "description": "扩大库存容量，提供自定义的仓库和马厩容量倍增。Expand inventory capacity, providing customized multipliers for warehouse and barn storage.",
     "dependencies": [
