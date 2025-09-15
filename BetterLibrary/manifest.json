@@ -1,0 +1,9 @@
+{
+    "name": "BetterLibrary",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/LymoneLM/HoLMods",
+    "description": "扩大藏书阁库存容量，借阅的书不损坏，[WIP]书本放入时提供更多自动筛选选项。Expand the library's storage capacity. Borrowed books do not decay. [WIP] Provide more auto-filtering options when adding books.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}
