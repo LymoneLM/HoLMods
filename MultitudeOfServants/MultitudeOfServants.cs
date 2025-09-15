@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MultitudeOfServants
 {
-    [BepInPlugin("cc.lymone.HoL.MultitudeOfServants", "MultitudeOfServants", "1.2.0")]
+    [BepInPlugin("cc.lymone.HoL.MultitudeOfServants", "MultitudeOfServants", "1.3.0")]
     public class MultitudeOfServants: BaseUnityPlugin
     {
         private static ConfigEntry<int> XiangFangConfig;
