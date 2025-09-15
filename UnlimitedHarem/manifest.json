@@ -1,0 +1,9 @@
+{
+    "name": "UnlimitedHarem",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/LymoneLM/HoLMods",
+    "description": "本家族成员可以无限娶妻纳妾。Clan members can take unlimited wives and concubines.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}
