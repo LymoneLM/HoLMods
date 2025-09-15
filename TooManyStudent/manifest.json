@@ -1,6 +1,6 @@
 {
     "name": "TooManyStudent",
-    "version_number": "1.1.0",
+    "version_number": "1.2.0",
     "website_url": "https://github.com/LymoneLM/HoLMods",
     "description": "扩大学校容量，提供自定义的师生席位倍增。Expand school capacity, providing customized multipliers for teacher and student slots.",
     "dependencies": [

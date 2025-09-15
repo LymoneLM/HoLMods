@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace TooManyStudent
 {
-    [BepInPlugin("cc.lymone.HoL.TooManyStudent", "TooManyStudent", "1.1.0")]
+    [BepInPlugin("cc.lymone.HoL.TooManyStudent", "TooManyStudent", "1.2.0")]
     public class TooManyStudent : BaseUnityPlugin
     {
         private static ConfigEntry<int> TeacherConfig;
