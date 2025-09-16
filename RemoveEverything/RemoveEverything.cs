@@ -206,8 +206,8 @@ namespace RemoveEverything {
                         }
                         // 出借书处理
                         for (int i = 0; i < Mainload.Member_now.Count; i++) {
-                            var str = Mainload.Member_now[i][19].Split('~')[0];
-                            if (Library.Contains(str.Split('@')[2])) {
+                            var str = Mainload.Member_now[i][19].Split('~')[0].Split('@');
+                            if (Library.Contains(str[2])) {
                                 string text = str[0] + "@" + str[1] + "@" + "null";
                                 text = text + "~" + Mainload.Member_now[i][19].Split('~')[1];
                                 Mainload.Member_now[i][19] = text;
