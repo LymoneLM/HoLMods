@@ -2,15 +2,19 @@
 
 一键清空宅邸建筑！快速安全无副作用！One-click to clear mansion buildings! Fast and safe with no side effects!
 
+
+
 模组替换了宅邸管理界面原版的一键清空装饰性建筑，完全按照类似玩家手动处理的逻辑删除其余建筑，安全无副作用，甚至比原版清空的更快！
 
 配置里提供了可选的快速模式关闭选项，如果您觉得删除的太快，或者不愿意忍受游戏过度卡顿，可以在配置文件内关闭。
 
-如果您有任何疑问或建议，或者发现BUG，欢迎添加QQ群交流：1058593281
-
 The mod replaces the vanilla one-click clear decorative buildings feature in the mansion management interface. It follows a logic similar to manual player processing to remove other buildings, ensuring safety with no side effects—it's even faster than the vanilla clear function!
 
 An optional fast mode toggle is provided in the configuration. If you feel the deletion is too rapid or prefer to avoid excessive game lag, you can disable it in the configuration file.
+
+
+
+如果您有任何疑问或建议，或者发现BUG，欢迎添加QQ群交流：1058593281
 
 If you have any questions, suggestions, or encounter bugs, feel free to join our [Discor Server](https://discord.gg/5ubSTurmBe) for discussion.
 
@@ -52,8 +56,7 @@ Yes, absolutely. However, make sure to back up your save file before using it! A
 
 **推荐使用模组管理器自动安装** **Use Mod Manager**
 
-- [GaleModManager](https://thunderstore.io/c/dyson-sphere-program/p/Kesomannen/GaleModManager/)
-- [r2modman](https://thunderstore.io/c/dyson-sphere-program/p/ebkr/r2modman/)
+- [GaleModManager](https://thunderstore.io/c/house-of-legacy/p/Kesomannen/GaleModManager/)
 - [ThunderstoreModManager](https://www.overwolf.com/app/thunderstore-thunderstore_mod_manager)
 
 **手动安装** **Manual**
