@@ -38,13 +38,14 @@ namespace MoreResolution {
         private static ConfigEntry<int> customResolution_height;
         private static bool custom_flag = false;
         private void Start() {
-            customResolution_width = Config.Bind<int>("自定义分辨率 Custom Resolution", "宽度 width", 0,"自定义分辨率的宽度，0为取消");
+            customResolution_width = Config.Bind<int>("自定义分辨率 Custom Resolution", "宽度 width", 0, "自定义分辨率的宽度，0为取消");
             customResolution_height = Config.Bind<int>("自定义分辨率 Custom Resolution", "高度 height", 0, "自定义分辨率的高度，0为取消");
             Mainload.AllFenBData = resolutions;
             if (customResolution_width.Value != 0 && customResolution_height.Value != 0) {
                 custom_flag = true;
                 Mainload.AllFenBData.Insert(0, new List<int> { customResolution_width.Value, customResolution_height.Value });
             }
+
             Harmony.CreateAndPatchAll(typeof(MoreResolution));
         }
         [HarmonyPostfix]
@@ -61,7 +62,7 @@ namespace MoreResolution {
                     })
                 };
             }
-            for (int i = custom_flag?1:0; i < Mainload.AllFenBData.Count; i++) {
+            for (int i = custom_flag ? 1 : 0; i < Mainload.AllFenBData.Count; i++) {
                 if (Mainload.AllFenBData[i][0] > Screen.currentResolution.width) {
                     break;
                 } else if (Mainload.AllFenBData[i][0] == Screen.currentResolution.width && Mainload.AllFenBData[i][1] > Screen.currentResolution.height) {
