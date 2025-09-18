@@ -1,0 +1,9 @@
+{
+    "name": "MoreResolution",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/LymoneLM/HoLMods",
+    "description": "支持更多分辨率，提供垂直同步选项。Support for additional resolutions, with a vertical sync option.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}

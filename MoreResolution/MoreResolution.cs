@@ -3,9 +3,9 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.UI.Dropdown;
 
 namespace MoreResolution {
     [BepInPlugin("cc.lymone.HoL.MoreResolution", "MoreResolution", "1.0.0")]
@@ -34,12 +34,22 @@ namespace MoreResolution {
             new List<int> { 5120, 3200 },   // 16:10
             new List<int> { 7680, 4320 }    // 16:9 (8K UHD)
         };
+
+        private static readonly List<string> VSyncText = new List<string> {
+            "垂直同步",
+            "VSync"
+        };
+
         private static ConfigEntry<int> customResolution_width;
         private static ConfigEntry<int> customResolution_height;
+        private static ConfigEntry<bool> onVSync;
+
         private static bool custom_flag = false;
         private void Start() {
             customResolution_width = Config.Bind<int>("自定义分辨率 Custom Resolution", "宽度 width", 0, "自定义分辨率的宽度，0为取消");
             customResolution_height = Config.Bind<int>("自定义分辨率 Custom Resolution", "高度 height", 0, "自定义分辨率的高度，0为取消");
+            onVSync = Config.Bind<bool>("配置 Config", "启用垂直同步 VSync On", true, "启用垂直同步，游戏本体默认开启");
+
             Mainload.AllFenBData = resolutions;
             if (customResolution_width.Value != 0 && customResolution_height.Value != 0) {
                 custom_flag = true;
@@ -47,6 +57,11 @@ namespace MoreResolution {
             }
 
             Harmony.CreateAndPatchAll(typeof(MoreResolution));
+            AllText.Text_UIA[11] = new List<string>
+            {
+                "全屏",
+                "Fullscreen"
+            };
         }
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SetPanel), "Awake")]
@@ -76,5 +91,60 @@ namespace MoreResolution {
             __instance.transform.Find("FenB").Find("AllClass").GetComponent<Dropdown>().options = options;
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SaveData), "ReadSetData")]
+        public static bool ProtectFenBConfigPrefix(ref int __state) {
+            try {
+                var SetData = ES3.Load<List<int>>("SetData", "FW/SetData.es3", Mainload.SetData);
+                __state = SetData[2];
+            } catch (FormatException) {
+                __state = -1;
+            }
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SaveData), "ReadSetData")]
+        public static void ProtectFenBConfigPostfix(int __state) {
+            if (__state == -1) {
+                return;
+            }
+            Mainload.SetData[2] = __state;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SetPanel), "Start")]
+        public static void CallCreateVSyncTogglePatch() {
+            MoreResolution.CreateVSyncToggle();
+        }
+
+        public static void CreateVSyncToggle() {
+            GameObject SetPanel = GameObject.Find("SetPanel");
+            GameObject QuanP = SetPanel.transform.Find("QuanP").gameObject;
+            if (SetPanel != null && QuanP != null) {
+                GameObject VSync = Instantiate(QuanP, SetPanel.transform);
+
+                VSync.name = "VSync";
+                VSync.transform.SetSiblingIndex(QuanP.transform.GetSiblingIndex() + 1);
+                VSync.transform.Find("Tip").GetComponent<Text>().text = MoreResolution.VSyncText[Mainload.SetData[4]];
+                QuanP.transform.Translate(new Vector3(0, 10, 0));
+                VSync.transform.Translate(new Vector3(0, -50, 0));
+
+                var toggle = VSync.transform.Find("Toggle").GetComponent<Toggle>();
+                toggle.onValueChanged.RemoveAllListeners();
+                toggle.onValueChanged.AddListener(MoreResolution.VSyncSet);
+                toggle.isOn = onVSync.Value;
+            }
+        }
+        public static void VSyncSet(bool isOn) {
+            if (isOn) {
+                onVSync.Value = true;
+                QualitySettings.vSyncCount = 1;
+            } else {
+                onVSync.Value = false;
+                QualitySettings.vSyncCount = 0;
+            }
+        }
     }
+
 }
