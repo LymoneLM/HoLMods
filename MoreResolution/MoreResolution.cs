@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace MoreResolution {
-    [BepInPlugin("cc.lymone.HoL.MoreResolution", "MoreResolution", "1.0.0")]
+    [BepInPlugin("cc.lymone.HoL.MoreResolution", "MoreResolution", "1.1.0")]
     public class MoreResolution : BaseUnityPlugin {
         private static readonly List<List<int>> resolutions = new List<List<int>> {
             new List<int> { 640, 480 },     // 4:3
@@ -92,6 +92,13 @@ namespace MoreResolution {
         }
 
         [HarmonyPrefix]
+        [HarmonyPatch(typeof(Mainload),"ReadSetData")]
+        public static bool LoadVSyncConfig() {
+            VSyncSet(onVSync.Value);
+            return true;
+        }
+
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(SaveData), "ReadSetData")]
         public static bool ProtectFenBConfigPrefix(ref int __state) {
             try {
@@ -137,11 +144,10 @@ namespace MoreResolution {
             }
         }
         public static void VSyncSet(bool isOn) {
+            onVSync.Value = isOn;
             if (isOn) {
-                onVSync.Value = true;
                 QualitySettings.vSyncCount = 1;
             } else {
-                onVSync.Value = false;
                 QualitySettings.vSyncCount = 0;
             }
         }
