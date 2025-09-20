@@ -45,10 +45,11 @@ namespace MemorialBiography {
             return true;
         }
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(H_CiTang_Panel),"OnEnableShow")]
         public static void Panel_Init_Patch(H_CiTang_Panel __instance) {
-            __instance.transform.Find("EventPanel").gameObject.SetActive(false);
+            if(__instance.transform.Find("EventPanel"))
+                __instance.transform.Find("EventPanel").gameObject.SetActive(false);
         }
 
 
@@ -111,6 +112,11 @@ namespace MemorialBiography {
             string[] array = new string[0];
             if (this.name != -1 && Mainload.Member_Ci[this.name].Count > 3) {
                 array = Mainload.Member_Ci[this.name][3].Split('|');
+            } else {
+                var old = Mainload.Member_Ci[this.name][0].Split('|')[3].Split('@')[0].Split('~')[3];
+                array = new string[] {
+                     old+"@-1@null@null"
+                };
             }
             string text = "null";
             for (int i = 0; i < array.Length; i++) {
@@ -149,6 +155,7 @@ namespace MemorialBiography {
         }
 
         public void CloseBT() {
+            this.name = -1;
             this.gameObject.SetActive(false);
         }
     }
