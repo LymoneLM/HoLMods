@@ -31,7 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="src\CommonLogger.cs" />
+    <Compile Include="src\ICommonLogger.cs" />
+    <Compile Include="src\LoggerWrapper.cs" />
     <Compile Include="src\NewItemTest.cs" />
+    <Compile Include="src\Patches\ResourcesPatch.cs" />
+    <Compile Include="src\ResourceData.cs" />
+    <Compile Include="src\ResourceRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -52,6 +58,9 @@
     <Reference Include="UnityEngine">
       <HintPath>..\libs\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\libs\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\libs\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
@@ -64,7 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="src\NewProp\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
