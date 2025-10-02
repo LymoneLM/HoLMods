@@ -31,9 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\CommonLogger.cs" />
-    <Compile Include="src\ICommonLogger.cs" />
-    <Compile Include="src\LoggerWrapper.cs" />
+    <Compile Include="src\Logger\CommonLogger.cs" />
+    <Compile Include="src\Logger\ICommonLogger.cs" />
+    <Compile Include="src\Logger\LoggerWrapper.cs" />
     <Compile Include="src\NewItemTest.cs" />
     <Compile Include="src\Patches\ResourcesPatch.cs" />
     <Compile Include="src\ResourceData.cs" />

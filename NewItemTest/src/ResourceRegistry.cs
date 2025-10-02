@@ -12,4 +12,9 @@ namespace NewItemTest {
         public LoadException(string message) : base(message) { }
     }
 
+    public static class ResourceRegistry
+    {
+
+    }
+
 }
