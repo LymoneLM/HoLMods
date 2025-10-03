@@ -4,7 +4,7 @@ namespace NewItemTest {
     /// <summary>
     /// Logger wrapper to appease Unit testing assembly...
     /// </summary>
-    public class LoggerWrapper : ICommonLogger {
+    public class LoggerWrapper : IYuanLogger {
         public ManualLogSource logSource;
 
         public LoggerWrapper(ManualLogSource logSource) {

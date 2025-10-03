@@ -15,13 +15,13 @@ namespace NewItemTest
         public const string VERSION = "1.0.0";
 
         internal static Harmony harmony;
-        internal static ICommonLogger logger;
+        internal static IYuanLogger logger;
         internal static ResourceData resource;
 
         private void Awake()
         {
             logger = new LoggerWrapper(Logger);
-            CommonLogger.SetLogger(logger);
+            YuanLogger.SetLogger(logger);
             harmony = new Harmony(MODGUID);
         }
 

@@ -31,13 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\Logger\CommonLogger.cs" />
-    <Compile Include="src\Logger\ICommonLogger.cs" />
-    <Compile Include="src\Logger\LoggerWrapper.cs" />
+    <Compile Include="src\Utils\Logging\YuanLogger.cs" />
+    <Compile Include="src\Utils\Logging\IYuanLogger.cs" />
+    <Compile Include="src\Utils\Logging\LoggerWrapper.cs" />
     <Compile Include="src\NewItemTest.cs" />
-    <Compile Include="src\Patches\ResourcesPatch.cs" />
-    <Compile Include="src\ResourceData.cs" />
-    <Compile Include="src\ResourceRegistry.cs" />
+    <Compile Include="src\ProtoRegistry\Patches\ResourcesPatch.cs" />
+    <Compile Include="src\ProtoRegistry\ResourceData.cs" />
+    <Compile Include="src\ProtoRegistry\ResourceRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">

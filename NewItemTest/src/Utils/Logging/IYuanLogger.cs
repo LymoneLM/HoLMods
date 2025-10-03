@@ -2,7 +2,7 @@
     /// <summary>
     /// Logger interface to appease Unit testing assembly...
     /// </summary>
-    public interface ICommonLogger {
+    public interface IYuanLogger {
         void LogFatal(object data);
         void LogError(object data);
         void LogWarning(object data);
