@@ -5,7 +5,7 @@ using HarmonyLib;
 using System;
 using UnityEngine;
 
-namespace NewItemTest
+namespace YuanAPI
 {
     [BepInPlugin(MODGUID, MODNAME, VERSION)]
     public class NewItemTest : BaseUnityPlugin

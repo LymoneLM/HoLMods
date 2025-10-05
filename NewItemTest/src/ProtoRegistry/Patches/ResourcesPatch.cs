@@ -1,10 +1,10 @@
 ﻿using System;
-using NewItemTest;
+using YuanAPI;
 using HarmonyLib;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace NewItemTest.Patches {
+namespace YuanAPI.Patches {
     //Loading custom resources
     [HarmonyPatch]
     static class ResourcesPatch {

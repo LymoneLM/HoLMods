@@ -1,6 +1,7 @@
-﻿using BepInEx.Logging;
+﻿// Source code is referenced from CommonAPI: https://github.com/limoka/CommonAPI
+using BepInEx.Logging;
 
-namespace NewItemTest {
+namespace YuanAPI {
     /// <summary>
     /// Logger wrapper to appease Unit testing assembly...
     /// </summary>

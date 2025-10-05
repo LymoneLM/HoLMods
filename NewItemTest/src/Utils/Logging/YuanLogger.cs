@@ -1,4 +1,5 @@
-﻿namespace NewItemTest {
+﻿// Source code is referenced from CommonAPI: https://github.com/limoka/CommonAPI
+namespace YuanAPI {
     /// <summary>
     /// Static container for logger interface to appease Unit testing assembly...
     /// </summary>

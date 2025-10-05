@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 
-namespace NewItemTest {
+namespace YuanAPI {
     public class ResourceData {
         public string modId;
         public string modPath;
