@@ -12,6 +12,7 @@ namespace YuanAPI {
         public LoadException(string message) : base(message) { }
     }
 
+    [YuanAPISubmodule]
     public static class ResourceRegistry
     {
 
