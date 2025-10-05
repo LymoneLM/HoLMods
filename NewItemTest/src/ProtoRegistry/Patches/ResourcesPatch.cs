@@ -11,13 +11,13 @@ namespace YuanAPI.Patches {
         [HarmonyPatch(typeof(Resources), "Load", typeof(string), typeof(Type))]
         [HarmonyPrefix]
         public static bool Prefix(ref string path, Type systemTypeInstance, ref Object __result) {
-            foreach (ResourceData resource in ProtoRegistry.modResources) {
+            foreach (ResourceData resource in ResourceRegistry.modResources) {
                 if (!path.Contains(resource.keyWord) || !resource.HasAssetBundle())
                     continue;
 
                 if (resource.bundle.Contains(path + ".prefab") && systemTypeInstance == typeof(GameObject)) {
                     Object myPrefab = resource.bundle.LoadAsset(path + ".prefab");
-                    CommonAPIPlugin.logger.LogDebug($"Loading registered asset {path}: {(myPrefab != null ? "Success" : "Failure")}");
+                    NewItemTest.logger.LogDebug($"Loading registered asset {path}: {(myPrefab != null ? "Success" : "Failure")}");
 
                     if (!ProtoRegistry.modelMats.ContainsKey(path)) {
                         __result = myPrefab;
