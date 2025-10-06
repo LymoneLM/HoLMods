@@ -1,4 +1,5 @@
-﻿// Source code is referenced from CommonAPI: https://github.com/limoka/CommonAPI
+﻿// Source code is taken from CommonAPI (GPL-3.0) - https://github.com/limoka/CommonAPI
+// Source code is indirectly taken from R2API (MIT) - https://github.com/risk-of-thunder/R2API
 #nullable enable
 using System;
 using System.Collections;

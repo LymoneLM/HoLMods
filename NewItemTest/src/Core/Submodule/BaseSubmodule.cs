@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Source code is taken from CommonAPI (GPL-3.0) - https://github.com/limoka/CommonAPI
+using System;
 
 namespace YuanAPI {
     public class BaseSubmodule<TSubmodule> where TSubmodule : class {

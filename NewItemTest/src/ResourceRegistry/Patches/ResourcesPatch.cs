@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Source code is taken from CommonAPI (GPL-3.0) - https://github.com/limoka/CommonAPI
+using System;
 using YuanAPI;
 using HarmonyLib;
 using UnityEngine;

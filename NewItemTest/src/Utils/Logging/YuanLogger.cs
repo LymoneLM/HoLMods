@@ -1,4 +1,4 @@
-﻿// Source code is referenced from CommonAPI: https://github.com/limoka/CommonAPI
+﻿// Source code is taken from CommonAPI (GPL-3.0) - https://github.com/limoka/CommonAPI
 namespace YuanAPI {
     /// <summary>
     /// Static container for logger interface to appease Unit testing assembly...
