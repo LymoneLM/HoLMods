@@ -17,7 +17,7 @@ namespace YuanAPI.Patches {
 
                 if (resource.bundle.Contains(path + ".prefab") && systemTypeInstance == typeof(GameObject)) {
                     Object myPrefab = resource.bundle.LoadAsset(path + ".prefab");
-                    NewItemTest.logger.LogDebug($"Loading registered asset {path}: {(myPrefab != null ? "Success" : "Failure")}");
+                    YuanAPI.logger.LogDebug($"Loading registered asset {path}: {(myPrefab != null ? "Success" : "Failure")}");
 
                     if (!ProtoRegistry.modelMats.ContainsKey(path)) {
                         __result = myPrefab;

@@ -7,7 +7,14 @@ using System.IO;
 using System.Linq;
 
 namespace YuanAPI {
-    internal class PluginScanner {
+    internal class PluginScanner
+    {
+        private static readonly IYuanLogger logger;
+
+        static PluginScanner() {
+            logger = YuanLogger.logger;
+        }
+
         private List<AssemblyDefinition> _pluginsAssemblyDefinitions;
 
         private List<AssemblyDefinition> PluginsAssemblyDefinitions {
@@ -24,7 +31,7 @@ namespace YuanAPI {
                             assemblies.Add(AssemblyDefinition.ReadAssembly(dll,
                                 BepInEx.Bootstrap.TypeLoader.ReaderParameters));
                         } catch (Exception) {
-                            NewItemTest.logger.LogDebug($"Cecil ReadAssembly couldn't read {dll}");
+                            logger.LogDebug($"Cecil ReadAssembly couldn't read {dll}");
                         }
                     }
 
@@ -83,8 +90,8 @@ namespace YuanAPI {
                     }
 
                     if (oldDuplicateAssembly != null) {
-                        NewItemTest.logger.LogDebug($"Removing {oldDuplicateAssembly.MainModule.FileName} (ModVer : {oldDuplicateModVer}) from the list " +
-                                                    $"because it's a duplicate of {goodAssembly.MainModule.FileName} (ModVer : {goodAssemblyVer}).");
+                        logger.LogDebug($"Removing {oldDuplicateAssembly.MainModule.FileName} (ModVer : {oldDuplicateModVer}) from the list " +
+                                                   $"because it's a duplicate of {goodAssembly.MainModule.FileName} (ModVer : {goodAssemblyVer}).");
                         duplicateOldAssemblies.Add(oldDuplicateAssembly);
                     }
                 }
@@ -163,7 +170,7 @@ namespace YuanAPI {
                                 // AssemblyResolutionException will happen on types that are resolved from
                                 // dynamicaly loaded / soft dependency assemblies
                                 if (!(ex is AssemblyResolutionException)) {
-                                    NewItemTest.logger.LogDebug(
+                                    logger.LogDebug(
                                         $"Catched ex when handling attribute scan request : {ex}\n" +
                                         $"We were looking for {attributeScanRequest.SearchedTypeFullName} " +
                                         $"in the assembly called {typeDef.Module.FileName}");
@@ -187,7 +194,7 @@ namespace YuanAPI {
                                 // AssemblyResolutionException will happen on types that are resolved from
                                 // dynamicaly loaded / soft dependency assemblies
                                 if (!(ex is AssemblyResolutionException)) {
-                                    NewItemTest.logger.LogDebug(
+                                    logger.LogDebug(
                                         $"Catched ex when handling class scan request : {ex}\n" +
                                         $"We were looking for {classScanRequest.SearchedTypeFullName} " +
                                         $"in the assembly called {typeDef.Module.FileName}");
@@ -245,14 +252,14 @@ namespace YuanAPI {
 
                 if (_attributeTargets.HasFlag(AttributeTargets.Assembly) &&
                     FoundOnAssemblyAttributes == null) {
-                    NewItemTest.logger.LogError(
+                    logger.LogError(
                         $"[ScanRequest] Given attribute {SearchedTypeFullName} " +
                         "will be checked against assemblies attributes but no corresponding callback was given");
                     isCoherent = false;
                 }
                 if (_attributeTargets.HasFlag(AttributeTargets.Class) &&
                     FoundOnAssemblyTypes == null) {
-                    NewItemTest.logger.LogError(
+                    logger.LogError(
                         $"[ScanRequest] Given attribute {SearchedTypeFullName} " +
                         "will be checked against assemblies class types but no corresponding callback was given");
                     isCoherent = false;
@@ -282,7 +289,7 @@ namespace YuanAPI {
                 var isCoherent = true;
 
                 if (FoundOnAssemblyTypes == null) {
-                    NewItemTest.logger.LogError(
+                    logger.LogError(
                         $"[ScanRequest] Given attribute {SearchedTypeFullName} " +
                         "will be checked against assemblies class types but no corresponding callback was given");
                     isCoherent = false;

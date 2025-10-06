@@ -12,7 +12,7 @@ namespace YuanAPI
     /// Plugin class of Yuan API. Entry point
     /// </summary>
     [BepInPlugin(MODGUID, MODNAME, VERSION)]
-    public class NewItemTest : BaseUnityPlugin
+    public class YuanAPI : BaseUnityPlugin
     {
         public const string MODNAME = "NewItemTest";
         public const string MODGUID = "cc.lymone.HoL." + MODNAME;

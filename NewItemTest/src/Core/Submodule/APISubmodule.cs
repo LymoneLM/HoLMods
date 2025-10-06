@@ -86,7 +86,7 @@ namespace YuanAPI {
             if (IsLoaded(moduleType.Name))
                 return true;
 
-            NewItemTest.logger.LogInfo($"Enabling CommonAPI Submodule: {moduleType.Name}");
+            logger.LogInfo($"Enabling CommonAPI Submodule: {moduleType.Name}");
 
             try {
                 InvokeStage(moduleType, InitStage.SetHooks, null);
@@ -96,7 +96,7 @@ namespace YuanAPI {
                 InvokeStage(moduleType, InitStage.PostLoad, null);
                 return true;
             } catch (Exception e) {
-                logger.Log(LogLevel.Error, $"{moduleType.Name} could not be initialized and has been disabled:\n\n{e.Message}");
+                logger.LogError($"{moduleType.Name} could not be initialized and has been disabled:\n\n{e.Message}");
             }
             return false;
         }
@@ -115,7 +115,7 @@ namespace YuanAPI {
                             return attr.Dependencies ?? Array.Empty<Type>();
                         }, (start, end) =>
                         {
-                            NewItemTest.logger.LogWarning($"Found Submodule circular dependency! Submodule {start.FullName} depends on {end.FullName}, which depends on {start.FullName}! Submodule {start.FullName} and all of its dependencies will not be loaded.");
+                            logger.LogWarning($"Found Submodule circular dependency! Submodule {start.FullName} depends on {end.FullName}, which depends on {start.FullName}! Submodule {start.FullName} and all of its dependencies will not be loaded.");
                         })
                             .Select(type => type.Name);
 
@@ -130,7 +130,7 @@ namespace YuanAPI {
                 var moduleTypes = GetSubmodules();
 
                 foreach (var moduleType in moduleTypes) {
-                    NewItemTest.logger.LogInfo($"Enabling CommonAPI Submodule: {moduleType.Name}");
+                    logger.LogInfo($"Enabling CommonAPI Submodule: {moduleType.Name}");
                 }
 
                 var faults = new Dictionary<Type, Exception>();
@@ -149,7 +149,7 @@ namespace YuanAPI {
                     .ForEachTry(t => InvokeStage(t, InitStage.PostLoad, null), faults);
 
                 faults.Keys.ForEachTry(t => {
-                    logger.Log(LogLevel.Error, $"{t.Name} could not be initialized and has been disabled:\n\n{faults[t]}");
+                    logger.LogError($"{t.Name} could not be initialized and has been disabled:\n\n{faults[t]}");
                     InvokeStage(t, InitStage.UnsetHooks, null);
                 });
             }
@@ -207,8 +207,7 @@ namespace YuanAPI {
             }
 
             if (attr.Build != default && attr.Build != _build)
-                logger.Log(LogLevel.Debug,
-                    $"{type.Name} was built for build {attr.Build}, current build is {_build}.");
+                logger.LogDebug($"{type.Name} was built for build {attr.Build}, current build is {_build}.");
 
             return true;
         }
@@ -219,7 +218,7 @@ namespace YuanAPI {
                 .Any(a => ((YuanAPISubmoduleInit)a).Stage.HasFlag(stage))).ToList();
 
             if (method.Count == 0) {
-                logger.Log(LogLevel.Debug, $"{type.Name} has no static method registered for {stage}");
+                logger.LogDebug($"{type.Name} has no static method registered for {stage}");
                 return;
             }
 

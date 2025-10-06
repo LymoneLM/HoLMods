@@ -13,8 +13,7 @@ namespace YuanAPI {
     }
 
     [YuanAPISubmodule]
-    public static class ResourceRegistry
-    {
+    public class ResourceRegistry : BaseSubmodule<ResourceRegistry> {
 
     }
 
