@@ -1,8 +1,8 @@
 {
     "name": "MemorialBiography",
-    "version_number": "1.0.0",
+    "version_number": "1.1.1",
     "website_url": "https://github.com/LymoneLM/HoLMods",
-    "description": "添加了祠堂牌位的生平信息展示界面。Added an interface displaying the life information of ancestral shrine tablets.",
+    "description": "添加了牌位的生平事件展示界面，提供祠堂容量倍增，牌位无法破坏功能。Add a life story interface for memorial tablets in Shrine. Provide shrine's capacity multiplier and makes tablets never broken.",
     "dependencies": [
         "BepInEx-BepInExPack-5.4.2100"
     ]

@@ -1,6 +1,6 @@
 # 牌位生平 MemorialBiography
 
-添加了祠堂牌位的生平信息展示界面。Added an interface displaying the life information of ancestral shrine tablets.
+添加了牌位的生平事件展示界面，提供祠堂容量倍增，牌位无法破坏功能。Add a life story interface for memorial tablets in Shrine. Provide shrine's capacity multiplier and makes tablets never broken.
 
 ------
 
