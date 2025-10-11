@@ -16,7 +16,7 @@ An optional fast mode toggle is provided in the configuration. If you feel the d
 
 如果您有任何疑问或建议，或者发现BUG，欢迎添加QQ群交流：1058593281
 
-If you have any questions, suggestions, or encounter bugs, feel free to join our [Discor Server](https://discord.gg/5ubSTurmBe) for discussion.
+If you have any questions, suggestions, or encounter bugs, feel free to join our [Discord Server](https://discord.gg/5ubSTurmBe) for discussion.
 
 ## ❓问题解答 FAQ
 
