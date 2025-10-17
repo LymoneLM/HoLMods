@@ -47,5 +47,23 @@ namespace MainloadTool {
 
             csv.Save();
         }
+
+        public static void Text_AllPropClass() {
+            var csv = new CsvWriter("Text_AllPropClass" + MainloadTool.GameVersion);
+
+            var title = new List<string> { "序号" };
+            title.AddRange(_languages);
+            csv.WriteLine(title);
+
+            var count = AllText.Text_AllPropClass.Count;
+            for (var i = 0; i < count; i++) {
+                csv.WriteField(i.ToString());
+                csv.WriteField(AllText.Text_AllPropClass[i]);
+
+                csv.EndRow();
+            }
+
+            csv.Save();
+        }
     }
 }

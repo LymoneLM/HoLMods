@@ -23,6 +23,8 @@ namespace MainloadTool {
 
             DumpMainload.AllBuilddata();
             DumpAllText.Text_AllBuild();
+
+            DumpAllText.Text_AllPropClass();
         }
     }
 }
