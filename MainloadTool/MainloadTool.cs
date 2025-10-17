@@ -1,8 +1,4 @@
 ﻿using BepInEx;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using BepInEx.Logging;
 
 namespace MainloadTool {
