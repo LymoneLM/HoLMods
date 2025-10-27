@@ -1,7 +1,7 @@
 {
     "name": "NewtonsoftJson",
-    "version_number": "1.0.0",
-    "website_url": "https://github.com/LymoneLM/HoLMods",
-    "description": "提供Newtonsoft.Json库的netstandard2.0版本，利用BepInEx加载依赖链确保库正常载入。Provides the netstandard2.0 version of the Newtonsoft.Json library, ensuring proper loading through the BepInEx dependency chain.",
+    "version_number": "13.0.4",
+    "website_url": "https://github.com/JamesNK/Newtonsoft.Json",
+    "description": "提供Newtonsoft.Json库的netstandard2.0版本。Shared the netstandard2.0 version of the Newtonsoft.Json library.",
     "dependencies": []
 }

@@ -1,6 +1,6 @@
 # NewtonsoftJson
 
-提供[Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)库的netstandard2.0版本，利用BepInEx加载依赖链确保库正常载入。Provides the netstandard2.0 version of the [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) library, ensuring proper loading through the BepInEx dependency chain.
+提供[Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)库的netstandard2.0版本。Shared the netstandard2.0 version of the [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) library.
 
 
 
@@ -10,9 +10,9 @@ This mod is a library that may be required by other mods. Normally, you don’t 
 
 
 
-如果您有任何疑问或建议，或者发现BUG，欢迎添加QQ群交流：1058593281
+如果您有任何疑问或建议，欢迎添加QQ群交流：1058593281
 
-If you have any questions, suggestions, or encounter bugs, feel free to join our [Discord Server](https://discord.gg/5ubSTurmBe) for discussion.
+If you have any questions, suggestions, feel free to join our [Discord Server](https://discord.gg/5ubSTurmBe) for discussion.
 
 ## 📦 安装 Installation
 
@@ -30,21 +30,15 @@ If you have any questions, suggestions, or encounter bugs, feel free to join our
 
 ## 🧑‍💻 开发者 Developer
 
-如果您的模组使用了Newtonsoft.Json，推荐您通过依赖这个模组来确保其加载。为了确保正确依赖，您需要在两个位置加入依赖信息：
+如果您的模组使用了Newtonsoft.Json，推荐您通过依赖这个模组来确保其加载。
 
-If your mod uses Newtonsoft.Json, it’s recommended to depend on this mod to ensure it loads correctly. To properly declare this dependency, add dependency information in two places:
-
-#### BepInEx插件类的依赖属性 | Dependency attribute in the BepInEx plugin class
-
-```c#
-[BepInDependency("cc.lymone.HoL.NewtonsoftJsonPlugin")]
-```
+If your mod uses Newtonsoft.Json, it’s recommended to depend on this mod to ensure it loads correctly.
 
 #### manifest.json
 
 ```
 "dependencies": [
-    "LymoneLM-NewtonsoftJson-1.0.0"
+    "LymoneLM-NewtonsoftJson-13.0.4"
 ]
 ```
 
@@ -54,15 +48,11 @@ For the exact dependency string, please refer to the `Dependency string` section
 
 > [!IMPORTANT]
 >
-> 务必不要将本模组以及Newtonsoft.Json.dll纳入您上传的模组文件！
+> 务必不要将本模组或Newtonsoft.Json.dll纳入您上传的模组文件！
 >
 > Never include this mod or Newtonsoft.Json.dll in the files you upload for your own mod!
 
 ## 🫡 致谢 Acknowledgements
-
-- 感谢 [ValheimModding Team](https://thunderstore.io/c/valheim/p/ValheimModding/) ，这个插件的代码来自他们的[项目](https://github.com/Valheim-Modding/CommonPackages)
-
-- Thanks to the [ValheimModding Team](https://thunderstore.io/c/valheim/p/ValheimModding/); this plugin’s code is derived from their [project](https://github.com/Valheim-Modding/CommonPackages).
 
 - 感谢 JamesNK 和 Newtonsoft.Json 其他贡献者，提供了高性能的开源 Json 库
 
