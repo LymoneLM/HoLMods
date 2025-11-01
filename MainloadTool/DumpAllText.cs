@@ -1,69 +1,68 @@
 ﻿using System.Collections.Generic;
 
-namespace MainloadTool {
+namespace MainloadTool;
 
-    internal class DumpAllText {
+internal class DumpAllText {
 
-        private static List<string> _languages = ["zh-CN","en-US"];
+    private static List<string> _languages = ["zh-CN","en-US"];
 
-        public static void Text_AllProp (){
-            var csv = new CsvWriter("Text_AllProp" + MainloadTool.GameVersion);
+    public static void Text_AllProp (){
+        var csv = new CsvWriter("Text_AllProp" + MainloadTool.GameVersion);
 
-            var title = new List<string> { "序号" };
-            title.AddRange(_languages);
-            csv.WriteLine(title);
+        var title = new List<string> { "序号" };
+        title.AddRange(_languages);
+        csv.WriteLine(title);
 
-            var count = AllText.Text_AllProp.Count;
-            for (var i = 0; i < count; i++) {
-                csv.WriteField(i.ToString());
-                csv.WriteField(AllText.Text_AllProp[i]);
+        var count = AllText.Text_AllProp.Count;
+        for (var i = 0; i < count; i++) {
+            csv.WriteField(i.ToString());
+            csv.WriteField(AllText.Text_AllProp[i]);
 
-                csv.EndRow();
-            }
-
-            csv.Save();
+            csv.EndRow();
         }
 
-        public static void Text_AllBuild() {
-            var csv = new CsvWriter("Text_AllBuild" + MainloadTool.GameVersion);
+        csv.Save();
+    }
 
-            var title = new List<string> { "序号" };
-            foreach (var lang in _languages) {
-                title.Add(lang + "建筑");
-                title.Add(lang + "简介");
+    public static void Text_AllBuild() {
+        var csv = new CsvWriter("Text_AllBuild" + MainloadTool.GameVersion);
+
+        var title = new List<string> { "序号" };
+        foreach (var lang in _languages) {
+            title.Add(lang + "建筑");
+            title.Add(lang + "简介");
+        }
+        csv.WriteLine(title);
+
+        var count = AllText.Text_AllBuild.Count;
+        for (var i = 0; i < count; i++) {
+            csv.WriteField(i.ToString());
+
+            foreach (var text in AllText.Text_AllBuild[i]) {
+                csv.WriteField(text.Split('|'));
             }
-            csv.WriteLine(title);
 
-            var count = AllText.Text_AllBuild.Count;
-            for (var i = 0; i < count; i++) {
-                csv.WriteField(i.ToString());
-
-                foreach (var text in AllText.Text_AllBuild[i]) {
-                    csv.WriteField(text.Split('|'));
-                }
-
-                csv.EndRow();
-            }
-
-            csv.Save();
+            csv.EndRow();
         }
 
-        public static void Text_AllPropClass() {
-            var csv = new CsvWriter("Text_AllPropClass" + MainloadTool.GameVersion);
+        csv.Save();
+    }
 
-            var title = new List<string> { "序号" };
-            title.AddRange(_languages);
-            csv.WriteLine(title);
+    public static void Text_AllPropClass() {
+        var csv = new CsvWriter("Text_AllPropClass" + MainloadTool.GameVersion);
 
-            var count = AllText.Text_AllPropClass.Count;
-            for (var i = 0; i < count; i++) {
-                csv.WriteField(i.ToString());
-                csv.WriteField(AllText.Text_AllPropClass[i]);
+        var title = new List<string> { "序号" };
+        title.AddRange(_languages);
+        csv.WriteLine(title);
 
-                csv.EndRow();
-            }
+        var count = AllText.Text_AllPropClass.Count;
+        for (var i = 0; i < count; i++) {
+            csv.WriteField(i.ToString());
+            csv.WriteField(AllText.Text_AllPropClass[i]);
 
-            csv.Save();
+            csv.EndRow();
         }
+
+        csv.Save();
     }
 }
