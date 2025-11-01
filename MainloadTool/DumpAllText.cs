@@ -1,27 +1,34 @@
 ﻿using System.Collections.Generic;
+using YuanAPI;
 
 namespace MainloadTool;
 
-internal class DumpAllText {
+internal class DumpAllText
+{
 
-    private static List<string> _languages = ["zh-CN","en-US"];
+    internal static List<string> _languages;
 
-    public static void Text_AllProp (){
-        var csv = new CsvWriter("Text_AllProp" + MainloadTool.GameVersion);
-
+    private static void DumpText(string name, List<List<string>> texts)
+    {
+        var csv = new CsvWriter(name + MainloadTool.GameVersion);
+        
         var title = new List<string> { "序号" };
         title.AddRange(_languages);
         csv.WriteLine(title);
-
-        var count = AllText.Text_AllProp.Count;
+        
+        var count = texts.Count;
         for (var i = 0; i < count; i++) {
             csv.WriteField(i.ToString());
-            csv.WriteField(AllText.Text_AllProp[i]);
+            csv.WriteField(texts[i]);
 
             csv.EndRow();
         }
-
+        
         csv.Save();
+    }
+
+    public static void Text_AllProp (){
+        DumpText("Text_AllProp", AllText.Text_AllProp);
     }
 
     public static void Text_AllBuild() {
@@ -49,20 +56,11 @@ internal class DumpAllText {
     }
 
     public static void Text_AllPropClass() {
-        var csv = new CsvWriter("Text_AllPropClass" + MainloadTool.GameVersion);
+        DumpText("Text_AllPropClass", AllText.Text_AllPropClass);
+    }
 
-        var title = new List<string> { "序号" };
-        title.AddRange(_languages);
-        csv.WriteLine(title);
-
-        var count = AllText.Text_AllPropClass.Count;
-        for (var i = 0; i < count; i++) {
-            csv.WriteField(i.ToString());
-            csv.WriteField(AllText.Text_AllPropClass[i]);
-
-            csv.EndRow();
-        }
-
-        csv.Save();
+    public static void Text_TipShow()
+    {
+        DumpText("Text_TipShow", AllText.Text_TipShow);
     }
 }
