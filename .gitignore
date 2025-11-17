@@ -1,6 +1,7 @@
-.idea
-libs
+# IDE配置
+**/.idea
 **/.vs
+**.sln.DotSettings.user
+# 项目输出
 **/bin
 **/obj
-**/Properties
