@@ -12,6 +12,7 @@
     
     <ItemGroup>
         <Reference Include="Assembly-CSharp" HintPath="..\.libs\Assembly-CSharp.dll" Private="False"/>
+        <Reference Include="Assembly-CSharp-firstpass" HintPath="..\.libs\Assembly-CSharp-firstpass.dll" Private="false"/>
         <Reference Include="UnityEngine.UI" HintPath="..\.libs\UnityEngine.UI.dll" Private="False"/>
         <Reference Include="YuanAPI" HintPath="..\.libs\YuanAPI.dll" Private="False"/>
     </ItemGroup>

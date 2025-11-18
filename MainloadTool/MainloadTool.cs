@@ -1,6 +1,7 @@
-﻿using System;
-using BepInEx;
+﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using HarmonyLib;
 using YuanAPI;
 using UnityEngine;
 
@@ -11,14 +12,24 @@ namespace MainloadTool;
 public class MainloadTool : BaseUnityPlugin{
     public const string MODNAME = "MainloadTool";
     public const string MODGUID = "cc.lymone.HoL." + MODNAME;
-    public const string VERSION = "1.1.0";
+    public const string VERSION = "2.0.0";
 
     internal new static ManualLogSource Logger;
     internal static string GameVersion;
 
+    internal static ConfigEntry<KeyCode> OpenMenuKey;
+    internal static ConfigEntry<string> AutoLoadSaveName;
+    internal static ConfigEntry<bool> IsPreventRemoveSave;
+
     private void Awake() {
         Logger = base.Logger;
         GameVersion = "_v" + Mainload.Vision_now.Substring(2);
+        
+        BindConfig();
+
+        var harmony = new Harmony(MODGUID);
+        harmony.PatchAll(typeof(PerDangBTPatch));
+        harmony.PatchAll(typeof(StartGameUIPatch));
         
         Localization.Initialize();
     }
@@ -26,6 +37,22 @@ public class MainloadTool : BaseUnityPlugin{
     private void Start()
     {
         DumpAllText._languages = Localization.GetAllLocales();
+    }
+
+    private void BindConfig()
+    {
+        OpenMenuKey = Config.Bind("加载工具 Mainload Tool", "菜单按键 Open Menu Key",
+            KeyCode.Home,
+            "");
+        
+        AutoLoadSaveName = Config.Bind("存档工具 Save Tool", "自动加载存档 Auto Load Save Name",
+            "",
+            "打开游戏自动加载存档，0-5为原版支持的存档，留空关闭\n" +
+            "可以自定义其他存档名，需要自行确保文件存在");
+
+        IsPreventRemoveSave = Config.Bind("存档工具 Save Tool", "阻止删除存档 Prevent Remove Save",
+            true,
+            "当加载存档出错时，是否阻止删除存档文件");
     }
     
     #region UI
@@ -36,7 +63,7 @@ public class MainloadTool : BaseUnityPlugin{
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Home))
+        if (Input.GetKeyDown(OpenMenuKey.Value))
         {
             ShowMenu = !ShowMenu;
 
