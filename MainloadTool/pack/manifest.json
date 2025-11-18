@@ -1,0 +1,10 @@
+{
+    "name": "MainloadTool",
+    "version_number": "2.0.0",
+    "website_url": "https://github.com/LymoneLM/HoLMods",
+    "description": "开发工具，提供部分游戏数据的导出，存档自动加载和自动删档保护。Dev tool, providing export of partial game data, automatic save loading, and automatic save deletion protection.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2304",
+        "LymoneLM-YuanAPI-0.1.1"
+    ]
+}
