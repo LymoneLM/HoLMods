@@ -176,6 +176,11 @@ public class MainloadTool : BaseUnityPlugin{
                 {
                     DumpAllText.Text_TipShow();
                 }
+                
+                if (GUILayout.Button("Text_UIA", GUILayout.ExpandWidth(true), GUILayout.Height(30)))
+                {
+                    DumpAllText.Text_UIA();
+                }
             }
             GUILayout.EndVertical();
 

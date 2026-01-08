@@ -27,11 +27,8 @@ internal class DumpAllText
         csv.Save();
     }
 
-    public static void Text_AllProp (){
-        DumpText("Text_AllProp", AllText.Text_AllProp);
-    }
-
-    public static void Text_AllBuild() {
+    public static void Text_AllBuild()
+    {
         var csv = new CsvWriter("Text_AllBuild" + MainloadTool.GameVersion);
 
         var title = new List<string> { "序号" };
@@ -54,13 +51,24 @@ internal class DumpAllText
 
         csv.Save();
     }
+    
+    public static void Text_AllProp ()
+    {
+        DumpText("Text_AllProp", AllText.Text_AllProp);
+    }
 
-    public static void Text_AllPropClass() {
+    public static void Text_AllPropClass()
+    {
         DumpText("Text_AllPropClass", AllText.Text_AllPropClass);
     }
 
     public static void Text_TipShow()
     {
         DumpText("Text_TipShow", AllText.Text_TipShow);
+    }
+
+    public static void Text_UIA()
+    {
+        DumpText("Text_UIA", AllText.Text_UIA);
     }
 }
