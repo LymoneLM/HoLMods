@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿#nullable enable
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using System;
@@ -32,13 +33,13 @@ public class HoLConsole : BaseUnityPlugin
     private bool _focusInputNextFrame;
     private int _historyIndex = -1;
 
-    // 输出行（按行上限）
-    private readonly List<ConsoleLine> _outputLines = new List<ConsoleLine>(2048);
+    // 输出行
+    private readonly List<ConsoleLine> _outputLines = new List<ConsoleLine>();
 
-    // 输入历史（上限）
-    private readonly List<string> _inputHistory = new List<string>(256);
+    // 输入历史
+    private readonly List<string> _inputHistory = new List<string>();
 
-    // 主线程打印队列（可从其他线程调用 Print）
+    // 输出缓冲区
     private readonly Queue<ConsoleLine> _pendingLines = new Queue<ConsoleLine>();
 
     private string[] _autoCompleteCandidates = Array.Empty<string>();
@@ -60,12 +61,12 @@ public class HoLConsole : BaseUnityPlugin
         _visible = _startOpen.Value;
 
         // 初始化核心
-        InGameConsoleAPI.Initialize(new ConsoleHost(this));
+        HoLConsoleAPI.Initialize(new ConsoleHost(this));
 
         // 内置命令
         RegisterBuiltinCommands();
 
-        InGameConsoleAPI.Print("InGameConsole ready. Press ToggleKey to open.", ConsoleLevel.Info);
+        HoLConsoleAPI.Print("InGameConsole ready. Press ToggleKey to open.", ConsoleLevel.Info);
     }
 
     private void Update()
@@ -76,7 +77,7 @@ public class HoLConsole : BaseUnityPlugin
             if (_visible) _focusInputNextFrame = true;
         }
 
-        // flush pending lines into output on main thread
+        // 缓冲区写入输出
         lock (_pendingLines)
         {
             while (_pendingLines.Count > 0)
@@ -85,7 +86,9 @@ public class HoLConsole : BaseUnityPlugin
             }
         }
 
-        TrimOutputIfNeeded();
+        // 修剪输出
+        while (_outputLines.Count > _maxOutputLines.Value)
+            _outputLines.RemoveAt(0);
     }
 
     private void OnGUI()
@@ -231,18 +234,18 @@ public class HoLConsole : BaseUnityPlugin
 
     private void ExecuteLine(string line)
     {
-        InGameConsoleAPI.Print($"> {line}", ConsoleLevel.Info);
+        HoLConsoleAPI.Print($"> {line}", ConsoleLevel.Info);
 
         try
         {
-            var result = InGameConsoleAPI.Execute(line);
+            var result = HoLConsoleAPI.Execute(line);
             if (!string.IsNullOrWhiteSpace(result))
-                InGameConsoleAPI.Print(result, ConsoleLevel.Info);
+                HoLConsoleAPI.Print(result, ConsoleLevel.Info);
         }
         catch (Exception ex)
         {
-            InGameConsoleAPI.Print($"Exception: {ex.Message}", ConsoleLevel.Error);
-            InGameConsoleAPI.Print(ex.StackTrace ?? "(no stack)", ConsoleLevel.Error);
+            HoLConsoleAPI.Print($"Exception: {ex.Message}", ConsoleLevel.Error);
+            HoLConsoleAPI.Print(ex.StackTrace ?? "(no stack)", ConsoleLevel.Error);
             Log.LogError(ex);
         }
 
@@ -252,20 +255,13 @@ public class HoLConsole : BaseUnityPlugin
 
     private void PushInputHistory(string line)
     {
-        // 避免连续重复（可选）
+        // 避免连续重复
         if (_inputHistory.Count == 0 || _inputHistory[_inputHistory.Count - 1] != line)
             _inputHistory.Add(line);
 
         // Trim
         while (_inputHistory.Count > _maxInputHistory.Value)
             _inputHistory.RemoveAt(0);
-    }
-
-    private void TrimOutputIfNeeded()
-    {
-        int max = Mathf.Max(50, _maxOutputLines.Value);
-        while (_outputLines.Count > max)
-            _outputLines.RemoveAt(0);
     }
 
     internal void EnqueueLine(ConsoleLine line)
@@ -340,7 +336,7 @@ public class HoLConsole : BaseUnityPlugin
 
         // 补全参数：让命令提供 completer（可选）
         var cmdName = parse.Tokens[0];
-        var cmd = InGameConsoleAPI.TryGetCommand(cmdName);
+        var cmd = HoLConsoleAPI.TryGetCommand(cmdName);
         if (cmd is ICommandCompleter completer)
         {
             var seed = parse.HasTrailingSpace ? "" : parse.LastToken;
@@ -384,7 +380,7 @@ public class HoLConsole : BaseUnityPlugin
         if (_autoCompleteSeed == seed && _autoCompleteCandidates.Length > 0) return;
 
         _autoCompleteSeed = seed;
-        var cmds = InGameConsoleAPI.ListCommandNames();
+        var cmds = HoLConsoleAPI.ListCommandNames();
 
         var matches = cmds
             .Where(n => n.StartsWith(seed, StringComparison.OrdinalIgnoreCase))
@@ -410,7 +406,7 @@ public class HoLConsole : BaseUnityPlugin
 
     private void RegisterBuiltinCommands()
     {
-        InGameConsoleAPI.RegisterCommand(new CommandDef(
+        HoLConsoleAPI.RegisterCommand(new CommandDef(
             name: "help",
             description: "List commands or show help for a command.",
             usage: "help [command]",
@@ -418,12 +414,12 @@ public class HoLConsole : BaseUnityPlugin
             {
                 if (args.Positionals.Count == 0)
                 {
-                    var names = InGameConsoleAPI.ListCommandNames().OrderBy(x => x).ToArray();
+                    var names = HoLConsoleAPI.ListCommandNames().OrderBy(x => x).ToArray();
                     var sb = new StringBuilder();
                     sb.AppendLine("Commands:");
                     foreach (var n in names)
                     {
-                        var c = InGameConsoleAPI.TryGetCommand(n);
+                        var c = HoLConsoleAPI.TryGetCommand(n);
                         if (c != null && !c.Hidden)
                             sb.AppendLine($"  {n} - {c.Description}");
                     }
@@ -433,21 +429,21 @@ public class HoLConsole : BaseUnityPlugin
                 else
                 {
                     var n = args.Positionals[0];
-                    var c = InGameConsoleAPI.TryGetCommand(n);
+                    var c = HoLConsoleAPI.TryGetCommand(n);
                     if (c == null) return $"Unknown command: {n}";
                     return $"{c.Name}\n  {c.Description}\nUsage: {c.Usage}";
                 }
             }
         ));
 
-        InGameConsoleAPI.RegisterCommand(new CommandDef(
+        HoLConsoleAPI.RegisterCommand(new CommandDef(
             name: "echo",
             description: "Print text.",
             usage: "echo <text...>",
             handler: (ctx, args) => string.Join(" ", args.Positionals)
         ));
 
-        InGameConsoleAPI.RegisterCommand(new CommandDef(
+        HoLConsoleAPI.RegisterCommand(new CommandDef(
             name: "clear",
             description: "Clear console output.",
             usage: "clear",
@@ -458,14 +454,14 @@ public class HoLConsole : BaseUnityPlugin
             }
         ));
 
-        InGameConsoleAPI.RegisterAlias("cls", "clear");
+        HoLConsoleAPI.RegisterAlias("cls", "clear");
     }
 }
 
 // =========================
 // Public API (Other mods use this)
 // =========================
-public static class InGameConsoleAPI
+public static class HoLConsoleAPI
 {
     private static ConsoleHost? _host;
     private static readonly CommandRegistry _registry = new CommandRegistry();
