@@ -7,9 +7,6 @@ using System.Text;
 
 namespace HoLConsole;
 
-// =========================
-// Host bridge (thread-safe enqueue by UI side)
-// =========================
 public interface IConsoleHost
 {
     void Enqueue(ConsoleLine line);
@@ -28,9 +25,6 @@ public readonly struct ConsoleLine
     }
 }
 
-// =========================
-// Command system
-// =========================
 public interface ICommand
 {
     string Name { get; }
@@ -75,8 +69,8 @@ public sealed class CompletionContext
     public string FullInput = "";
     public List<string> Tokens = new();
     public string Seed = "";
-    public int TokenIndex; // index in Tokens that is being completed
-    public bool CompletingCommandName; // true if TokenIndex == 0
+    public int TokenIndex;
+    public bool CompletingCommandName;
 }
 
 public sealed class CommandRegistry
@@ -111,9 +105,6 @@ public sealed class CommandRegistry
     public IEnumerable<string> ListNames() => _commands.Keys;
 }
 
-// =========================
-// Args parsing (quotes already handled by tokenizer)
-// =========================
 public sealed class ParsedArgs
 {
     public readonly List<string> Positionals = new();
@@ -132,16 +123,14 @@ public sealed class ParsedArgs
 
     private static bool LooksLikeShortFlag(string token)
     {
-        // -x, -abc are flags; but -10 / -3.14 are numbers -> NOT flags
         if (token.Length < 2 || token[0] != '-') return false;
         if (token == "-") return false;
-        if (char.IsDigit(token[1])) return false; // negative number
+        if (char.IsDigit(token[1])) return false;
         return true;
     }
 
     private static bool LooksLikeLongFlag(string token)
     {
-        // --key is flag; --10 is weird but treat as not-flag to avoid eating negative number style inputs
         if (!token.StartsWith("--", StringComparison.Ordinal) || token.Length <= 2) return false;
         if (char.IsDigit(token[2])) return false;
         return true;
@@ -204,9 +193,6 @@ public sealed class ParsedArgs
     }
 }
 
-// =========================
-// Tokenizer + completion split helper
-// =========================
 public static class CommandLineParser
 {
     public sealed class ParseResult

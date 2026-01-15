@@ -48,11 +48,11 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
     // Autocomplete
     private string[] _candidates = Array.Empty<string>();
     private int _candidateIndex = -1;
-    private string _sessionKey = ""; // identify current completion session
+    private string _sessionKey = "";
 
     private const string INPUT_CONTROL_NAME = "HoLConsole_Input";
 
-    // Cached styles (avoid per-line allocations)
+    // Cached styles
     private GUIStyle _styleInfo = null!;
     private GUIStyle _styleWarn = null!;
     private GUIStyle _styleError = null!;
@@ -208,18 +208,12 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
             ConsoleLevel.Error => _styleError,
             _ => _styleInfo
         };
-
-    // =========================
-    // IConsoleHost
-    // =========================
+    
     public void Enqueue(ConsoleLine line)
     {
         _pendingLines.Enqueue(line);
     }
-
-    // =========================
-    // Input handling
-    // =========================
+    
     private void HandleInputEvents()
     {
         var e = Event.current;
@@ -305,9 +299,7 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
             _visible = false;
             return;
         }
-
-        // Any other key: input changed => reset completion session
-        // (IMGUI doesn't give us "text changed" event easily; conservative reset is fine)
+        
         if (e.keyCode != KeyCode.LeftArrow && e.keyCode != KeyCode.RightArrow)
         {
             ResetAutocomplete();
@@ -350,28 +342,14 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
         _historyIndex = -1;
         _historyStash = "";
     }
-
-    // =========================
-    // Scrolling policy
-    // =========================
+    
     private bool IsNearBottom()
     {
-        // Heuristic: if current scroll is within ~40px of bottom, consider "at bottom"
-        // We don't have exact content height easily; use a simple tolerant heuristic:
-        // if user scrolled up a lot, _scrollPos.y will be much smaller than MaxValue after last auto scroll.
-        // Also when the scroll view is small, treat as bottom.
         if (_scrollPos.y >= 1e7f) return true;
-
-        // If the window is small and scroll doesn't move much, allow autoscroll.
         if (_lastScrollViewHeight <= 0f) return true;
-
-        // Fallback: don't force scroll if user manually scrolled upward (common case: y not huge)
         return _scrollPos.y > 100000f;
     }
-
-    // =========================
-    // Autocomplete
-    // =========================
+    
     private void ResetAutocomplete()
     {
         _candidates = Array.Empty<string>();
@@ -449,23 +427,18 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void ApplyCandidateToInput(string current, CommandLineParser.CompletionSplit split, int tokenIndex, bool completingNewToken, string picked)
     {
-        // We assume caret at end; operate on string tail.
-        // Case A: completing a new token -> append "picked "
         if (completingNewToken)
         {
             _input = current + picked + " ";
             return;
         }
-
-        // Case B: replace last token (tail replace)
+        
         if (split.Tokens.Count == 0)
         {
             _input = picked + " ";
             return;
         }
-
-        // Replace only the last token text in the raw input
-        // (Works for the "caret at end" assumption.)
+        
         var last = split.LastToken;
         if (last.Length == 0)
         {
@@ -475,17 +448,13 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
 
         var prefix = current.Substring(0, current.Length - last.Length);
         _input = prefix + picked;
-
-        // Nice behavior: if we just completed a command name, add a trailing space
+        
         if (tokenIndex == 0)
         {
             _input += " ";
         }
     }
-
-    // =========================
-    // Built-in commands
-    // =========================
+    
     private void RegisterBuiltinCommands()
     {
         HoLConsoleAPI.RegisterCommand(new CommandDef(

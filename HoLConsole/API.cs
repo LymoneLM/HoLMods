@@ -6,16 +6,10 @@ using System.Linq;
 
 namespace HoLConsole;
 
-/// <summary>
-/// Public API for other mods:
-/// - Register commands
-/// - Print lines
-/// - Execute command lines
-/// </summary>
 public static class HoLConsoleAPI
 {
     private static IConsoleHost? _host;
-    private static readonly CommandRegistry _registry = new();
+    private static CommandRegistry _registry = new();
 
     public static bool IsInitialized => _host != null;
 
