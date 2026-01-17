@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace HoLConsole;
 
-public static class HoLConsoleAPI
+public static class ConsoleAPI
 {
     private static IConsoleHost? _host;
     private static CommandRegistry _registry = new();

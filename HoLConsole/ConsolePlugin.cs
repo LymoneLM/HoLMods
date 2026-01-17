@@ -12,13 +12,13 @@ using UnityEngine;
 namespace HoLConsole;
 
 [BepInPlugin(MODGUID, MODNAME, VERSION)]
-public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
+public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 {
     public const string MODNAME = "HoLConsole";
     public const string MODGUID = "cc.lymone.HoL." + MODNAME;
     public const string VERSION = "1.0.0";
 
-    internal static HoLConsolePlugin Instance = null!;
+    internal static ConsolePlugin Instance = null!;
     internal static ManualLogSource Log = null!;
 
     private ConfigEntry<KeyCode> _toggleKey = null!;
@@ -62,17 +62,22 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
         Instance = this;
         Log = Logger;
 
-        _toggleKey = Config.Bind("General", "ToggleKey", KeyCode.BackQuote, "Key to toggle the console window.");
-        _maxOutputLines = Config.Bind("General", "MaxOutputLines", 600, "Maximum output lines kept in memory.");
-        _maxInputHistory = Config.Bind("General", "MaxInputHistory", 200, "Maximum input history items kept in memory.");
-        _startOpen = Config.Bind("General", "StartOpen", false, "Start with console visible.");
+        _toggleKey = Config.Bind("按键绑定 Bind Key", "命令行热键 Toggle Key",
+            KeyCode.BackQuote,
+            "唤醒命令行窗口\nKey to toggle the console window.");
+        _maxOutputLines = Config.Bind("配置 Config", "最大输出行数 Max Output Lines",
+            600);
+        _maxInputHistory = Config.Bind("配置 Config", "最大输入历史 Max Input History",
+            200);
+        _startOpen = Config.Bind("配置 Config", "启动时开启命令行 Start Open",
+            false);
 
         _visible = _startOpen.Value;
 
-        HoLConsoleAPI.Initialize(this);
+        ConsoleAPI.Initialize(this);
         RegisterBuiltinCommands();
 
-        HoLConsoleAPI.Print("HoLConsole ready. Press ToggleKey to open.", ConsoleLevel.Info);
+        ConsoleAPI.Print("HoLConsole ready. Press ToggleKey to open.", ConsoleLevel.Info);
     }
 
     private void Update()
@@ -308,18 +313,18 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void ExecuteLine(string line)
     {
-        HoLConsoleAPI.Print($"> {line}", ConsoleLevel.Info);
+        ConsoleAPI.Print($"> {line}", ConsoleLevel.Info);
 
         try
         {
-            var result = HoLConsoleAPI.Execute(line, Log);
+            var result = ConsoleAPI.Execute(line, Log);
             if (!string.IsNullOrWhiteSpace(result))
-                HoLConsoleAPI.Print(result, ConsoleLevel.Info);
+                ConsoleAPI.Print(result, ConsoleLevel.Info);
         }
         catch (Exception ex)
         {
-            HoLConsoleAPI.Print($"Exception: {ex.Message}", ConsoleLevel.Error);
-            HoLConsoleAPI.Print(ex.StackTrace ?? "(no stack)", ConsoleLevel.Error);
+            ConsoleAPI.Print($"Exception: {ex.Message}", ConsoleLevel.Error);
+            ConsoleAPI.Print(ex.StackTrace ?? "(no stack)", ConsoleLevel.Error);
             Log.LogError(ex);
         }
 
@@ -398,12 +403,12 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
     {
         if (completingCommandName)
         {
-            var all = HoLConsoleAPI.ListCommandNames();
+            var all = ConsoleAPI.ListCommandNames();
             return all.Where(n => n.StartsWith(seed, StringComparison.OrdinalIgnoreCase))
                       .OrderBy(n => n);
         }
 
-        var cmd = HoLConsoleAPI.TryGetCommand(cmdName);
+        var cmd = ConsoleAPI.TryGetCommand(cmdName);
         if (cmd is ICommandCompleter completer)
         {
             var ctx = new CompletionContext
@@ -457,7 +462,7 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
     
     private void RegisterBuiltinCommands()
     {
-        HoLConsoleAPI.RegisterCommand(new CommandDef(
+        ConsoleAPI.RegisterCommand(new CommandDef(
             name: "help",
             description: "List commands or show help for a command.",
             usage: "help [command]",
@@ -465,12 +470,12 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
             {
                 if (args.Positionals.Count == 0)
                 {
-                    var names = HoLConsoleAPI.ListCommandNames().OrderBy(x => x).ToArray();
+                    var names = ConsoleAPI.ListCommandNames().OrderBy(x => x).ToArray();
                     var sb = new StringBuilder();
                     sb.AppendLine("Commands:");
                     foreach (var n in names)
                     {
-                        var c = HoLConsoleAPI.TryGetCommand(n);
+                        var c = ConsoleAPI.TryGetCommand(n);
                         if (c != null && !c.Hidden)
                             sb.AppendLine($"  {n} - {c.Description}");
                     }
@@ -480,21 +485,21 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
                 else
                 {
                     var n = args.Positionals[0];
-                    var c = HoLConsoleAPI.TryGetCommand(n);
+                    var c = ConsoleAPI.TryGetCommand(n);
                     if (c == null) return $"Unknown command: {n}";
                     return $"{c.Name}\n  {c.Description}\nUsage: {c.Usage}";
                 }
             }
         ));
 
-        HoLConsoleAPI.RegisterCommand(new CommandDef(
+        ConsoleAPI.RegisterCommand(new CommandDef(
             name: "echo",
             description: "Print text.",
             usage: "echo <text...>",
             handler: (ctx, args) => string.Join(" ", args.Positionals)
         ));
 
-        HoLConsoleAPI.RegisterCommand(new CommandDef(
+        ConsoleAPI.RegisterCommand(new CommandDef(
             name: "clear",
             description: "Clear console output.",
             usage: "clear",
@@ -506,7 +511,7 @@ public class HoLConsolePlugin : BaseUnityPlugin, IConsoleHost
             }
         ));
 
-        HoLConsoleAPI.RegisterAlias("cls", "clear");
+        ConsoleAPI.RegisterAlias("cls", "clear");
     }
 }
 
