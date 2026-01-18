@@ -80,11 +80,7 @@ public sealed class CommandRegistry
 
     public void Register(ICommand cmd) => _commands[cmd.Name] = cmd;
 
-    public bool Unregister(string name)
-    {
-        _aliases.Remove(name);
-        return _commands.Remove(name);
-    }
+    public bool Unregister(string name) => _aliases.Remove(name) || _commands.Remove(name);
 
     public void RegisterAlias(string alias, string target) => _aliases[alias] = target;
 

@@ -51,6 +51,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private string _sessionKey = "";
 
     private const string INPUT_CONTROL_NAME = "HoLConsole_Input";
+    private int _inputControlId;
 
     // Cached styles
     private GUIStyle _styleInfo = null!;
@@ -82,11 +83,15 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void Update()
     {
+        // 按键
         if (Input.GetKeyDown(_toggleKey.Value))
         {
             _visible = !_visible;
             if (_visible) _focusInputNextFrame = true;
         }
+
+        if (_visible && Input.GetKeyDown(KeyCode.Escape))
+            _visible = false;
 
         // Drain pending output
         int drained = 0;
@@ -194,11 +199,10 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void DrawInputArea()
     {
+        HandleInputEvents();
         GUI.SetNextControlName(INPUT_CONTROL_NAME);
         _input = GUILayout.TextField(_input ?? "", GUILayout.ExpandWidth(true));
-
-        HandleInputEvents();
-
+        
         if (_focusInputNextFrame)
         {
             _focusInputNextFrame = false;
@@ -223,6 +227,9 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     {
         var e = Event.current;
         if (e == null) return;
+        
+        if(GUI.GetNameOfFocusedControl() != INPUT_CONTROL_NAME) return;
+        
         if (e.type != EventType.KeyDown) return;
 
         // Enter: execute
