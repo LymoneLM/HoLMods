@@ -19,7 +19,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     public const string VERSION = "1.0.0";
 
     internal static ConsolePlugin Instance = null!;
-    internal static ManualLogSource Log = null!;
+    internal new static ManualLogSource Logger = null!;
 
     private ConfigEntry<KeyCode> _toggleKey = null!;
     private ConfigEntry<int> _maxOutputLines = null!;
@@ -61,7 +61,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private void Awake()
     {
         Instance = this;
-        Log = Logger;
+        Logger = base.Logger;
 
         _toggleKey = Config.Bind("按键绑定 Bind Key", "命令行热键 Toggle Key",
             KeyCode.BackQuote,
@@ -77,8 +77,14 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
         ConsoleAPI.Initialize(this);
         RegisterBuiltinCommands();
-
-        ConsoleAPI.Print("HoLConsole ready. Press ToggleKey to open.", ConsoleLevel.Info);
+        
+        ConsoleAPI.Print("______________________________________________________");
+        ConsoleAPI.Print($"HoLConsole v{VERSION}");
+        ConsoleAPI.Print("Copyright (c) 2026 LymoneLM | MIT Licensed Open Source");
+        ConsoleAPI.Print("GitHub Repository: https://github.com/LymoneLM/HoLMods");
+        ConsoleAPI.Print("______________________________________________________");
+        
+        Logger.LogInfo($"HoLConsole ready. Press [{_toggleKey.Value}] to open.");
     }
 
     private void Update()
@@ -120,7 +126,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         EnsureStyles();
 
         GUI.depth = 0;
-        _windowRect = GUILayout.Window(GetInstanceID(), _windowRect, DrawWindow, "HoLConsole");
+        _windowRect = GUILayout.Window(GetInstanceID(), _windowRect, DrawWindow, $"HoLConsole v{VERSION}");
     }
 
     private void EnsureStyles()
@@ -133,45 +139,27 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             normal = { textColor = Color.white }
         };
 
-        _styleWarn = new GUIStyle(_styleInfo);
-        _styleWarn.normal.textColor = new Color(1f, 0.8f, 0.2f);
+        _styleWarn = new GUIStyle(_styleInfo)
+        {
+            normal = { textColor = new Color(1f, 0.8f, 0.2f) }
+        };
 
-        _styleError = new GUIStyle(_styleInfo);
-        _styleError.normal.textColor = new Color(1f, 0.35f, 0.35f);
+        _styleError = new GUIStyle(_styleInfo)
+        {
+            normal = { textColor = new Color(1f, 0.35f, 0.35f) }
+        };
     }
 
     private void DrawWindow(int windowId)
     {
         GUILayout.BeginVertical();
-
-        DrawToolbar();
+        
         DrawOutputArea();
         DrawInputArea();
 
         GUILayout.EndVertical();
 
         GUI.DragWindow(new Rect(0, 0, 10000, 20));
-    }
-
-    private void DrawToolbar()
-    {
-        GUILayout.BeginHorizontal();
-
-        if (GUILayout.Button("Clear", GUILayout.Width(70)))
-        {
-            _outputLines.Clear();
-            _shouldScrollToBottom = true;
-        }
-
-        if (GUILayout.Button("Help", GUILayout.Width(70)))
-        {
-            ExecuteLine("help");
-        }
-
-        GUILayout.FlexibleSpace();
-        GUILayout.Label($"Lines: {_outputLines.Count}/{_maxOutputLines.Value}", GUILayout.Width(180));
-
-        GUILayout.EndHorizontal();
     }
 
     private void DrawOutputArea()
@@ -203,10 +191,21 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         GUI.SetNextControlName(INPUT_CONTROL_NAME);
         _input = GUILayout.TextField(_input ?? "", GUILayout.ExpandWidth(true));
         
+        if (GUI.GetNameOfFocusedControl() == INPUT_CONTROL_NAME)
+            _inputControlId = GUIUtility.keyboardControl;
+        
         if (_focusInputNextFrame)
         {
             _focusInputNextFrame = false;
             GUI.FocusControl(INPUT_CONTROL_NAME);
+
+            GUIUtility.keyboardControl = _inputControlId;
+            var te = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), _inputControlId);
+            te.text = _input ?? "";  
+
+            var end = te.text.Length;
+            te.cursorIndex = end;
+            te.selectIndex = end;
         }
     }
 
@@ -324,7 +323,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
         try
         {
-            var result = ConsoleAPI.Execute(line, Log);
+            var result = ConsoleAPI.Execute(line, Logger);
             if (!string.IsNullOrWhiteSpace(result))
                 ConsoleAPI.Print(result, ConsoleLevel.Info);
         }
@@ -332,7 +331,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         {
             ConsoleAPI.Print($"Exception: {ex.Message}", ConsoleLevel.Error);
             ConsoleAPI.Print(ex.StackTrace ?? "(no stack)", ConsoleLevel.Error);
-            Log.LogError(ex);
+            Logger.LogError(ex);
         }
 
         // only scroll if user already near bottom
