@@ -1,60 +1,33 @@
 ﻿#nullable enable
-using BepInEx.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HoLConsole;
 
 public static class ConsoleAPI
 {
-    private static IConsoleHost? _host;
-    private static CommandRegistry _registry = new();
+    private static Dictionary<string, ICommand> _commands = new(StringComparer.OrdinalIgnoreCase);
+    private static Dictionary<string, string> _aliases = new(StringComparer.OrdinalIgnoreCase);
+    
+    public static void RegisterCommand(ICommand cmd) => _commands[cmd.Name] = cmd;
+    public static bool UnregisterCommand(string name) => _aliases.Remove(name) || _commands.Remove(name);
 
-    public static bool IsInitialized => _host != null;
-
-    public static void Initialize(IConsoleHost host) => _host = host;
-
-    public static void Print(string text, ConsoleLevel level = ConsoleLevel.Info)
+    public static void RegisterAlias(string alias, string target) => _aliases[alias] = target;
+    
+    public static bool TryResolveCommand(string name, out ICommand? cmd)
     {
-        if (_host == null) return;
-        foreach (var line in SplitLines(text))
-            _host.Enqueue(new ConsoleLine(level, line));
+        cmd = null;
+        if (_aliases.TryGetValue(name, out var target))
+            name = target;
+        return _commands.TryGetValue(name, out cmd);
+    }
+    
+    public static ICommand? TryGetCommand(string name)
+    {
+        TryResolveCommand(name, out var cmd);
+        return cmd;
     }
 
-    public static string Execute(string line, ManualLogSource? logger = null)
-    {
-        var parsed = CommandLineParser.Parse(line);
-        if (parsed.Tokens.Count == 0) return "";
-
-        var cmdName = parsed.Tokens[0];
-        if (_registry.TryResolve(cmdName, out var cmd) == false || cmd == null)
-            return $"Unknown command: {cmdName} (type: help)";
-
-        var ctx = new CommandContext
-        {
-            Logger = logger ?? BepInEx.Logging.Logger.CreateLogSource("HoLConsole"),
-            Print = Print
-        };
-
-        var args = ParsedArgs.FromTokens(parsed.Tokens.Skip(1).ToList());
-        return cmd.Handler(ctx, args) ?? "";
-    }
-
-    public static void RegisterCommand(ICommand command) => _registry.Register(command);
-    public static bool UnregisterCommand(string name) => _registry.Unregister(name);
-
-    public static void RegisterAlias(string alias, string targetCommand) => _registry.RegisterAlias(alias, targetCommand);
-
-    public static ICommand? TryGetCommand(string name) => _registry.TryGet(name);
-
-    public static IEnumerable<string> ListCommandNames() => _registry.ListNames();
-
-    private static IEnumerable<string> SplitLines(string text)
-    {
-        if (string.IsNullOrEmpty(text)) yield break;
-        var arr = text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
-        foreach (var s in arr) yield return s;
-    }
+    public static IEnumerable<string> ListCommandNames() => _commands.Keys;
 }
 

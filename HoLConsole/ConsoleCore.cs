@@ -7,6 +7,75 @@ using System.Text;
 
 namespace HoLConsole;
 
+internal static class ConsoleCore
+{
+    private static IConsoleHost? _host;
+    private static ManualLogSource? _logger;
+    private static CommandContext? _context;
+
+    public static bool IsInitialized => _host != null;
+
+    public static void Initialize(IConsoleHost host, ManualLogSource logger)
+    {
+        _host = host;
+        _logger = logger;
+        _context = new CommandContext{
+            Logger = _logger,
+            Print = Print
+        };
+    }
+    
+    public static void Print(string text, ConsoleLevel level = ConsoleLevel.Info)
+    {
+        if (!IsInitialized) return;
+        
+        foreach (var line in SplitLines(text))
+            _host!.Enqueue(new ConsoleLine(level, line));
+    }
+    
+    public static void Execute(string line)
+    {
+        Print($"> {line}");
+
+        if (!IsInitialized)
+        {
+            Print("ConsoleCore has not been initialized", ConsoleLevel.Error);
+            return;
+        }
+        
+        var parsed = CommandLineParser.Parse(line);
+        if (parsed.Tokens.Count == 0) return;
+
+        var cmdName = parsed.Tokens[0];
+        if (!ConsoleAPI.TryResolveCommand(cmdName, out var cmd) || cmd == null)
+        {
+            Print($"Unknown command: {cmdName} (type: help)");
+            return;
+        }
+        
+        var args = ParsedArgs.FromTokens(parsed.Tokens.Skip(1).ToList());
+        
+        try
+        {
+            var result = cmd.Handler(_context!, args) ?? "";
+            if (!string.IsNullOrWhiteSpace(result))
+                Print(result);
+        }
+        catch (Exception ex)
+        {
+            _logger!.LogError($"Exception: {ex.Message}");
+            Print("Fatal error when running command.", ConsoleLevel.Error);
+        }
+    }
+    
+    private static IEnumerable<string> SplitLines(string text)
+    {
+        if (string.IsNullOrEmpty(text)) yield break;
+        var arr = text.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+        foreach (var s in arr) yield return s;
+    }
+}
+
 public interface IConsoleHost
 {
     void Enqueue(ConsoleLine line);
@@ -14,10 +83,10 @@ public interface IConsoleHost
 
 public enum ConsoleLevel { Info, Warn, Error }
 
-public readonly struct ConsoleLine
+public class ConsoleLine
 {
-    public readonly ConsoleLevel Level;
-    public readonly string Text;
+    public ConsoleLevel Level;
+    public string Text;
     public ConsoleLine(ConsoleLevel level, string text)
     {
         Level = level;
@@ -34,11 +103,6 @@ public interface ICommand
     Func<CommandContext, ParsedArgs, string?> Handler { get; }
 }
 
-public interface ICommandCompleter
-{
-    IEnumerable<string> Complete(CompletionContext ctx);
-}
-
 public sealed class CommandDef : ICommand
 {
     public string Name { get; }
@@ -47,7 +111,8 @@ public sealed class CommandDef : ICommand
     public bool Hidden { get; }
     public Func<CommandContext, ParsedArgs, string?> Handler { get; }
 
-    public CommandDef(string name, string description, string usage, Func<CommandContext, ParsedArgs, string?> handler, bool hidden = false)
+    public CommandDef(string name, string description, string usage,
+        Func<CommandContext, ParsedArgs, string?> handler, bool hidden = false)
     {
         Name = name;
         Description = description;
@@ -63,6 +128,11 @@ public sealed class CommandContext
     public Action<string, ConsoleLevel> Print = null!;
 }
 
+public interface ICommandCompleter
+{
+    Func<CompletionContext, IEnumerable<string>> Complete { get; }
+}
+
 public sealed class CompletionContext
 {
     public string CommandName = "";
@@ -71,34 +141,6 @@ public sealed class CompletionContext
     public string Seed = "";
     public int TokenIndex;
     public bool CompletingCommandName;
-}
-
-public sealed class CommandRegistry
-{
-    private readonly Dictionary<string, ICommand> _commands = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, string> _aliases = new(StringComparer.OrdinalIgnoreCase);
-
-    public void Register(ICommand cmd) => _commands[cmd.Name] = cmd;
-
-    public bool Unregister(string name) => _aliases.Remove(name) || _commands.Remove(name);
-
-    public void RegisterAlias(string alias, string target) => _aliases[alias] = target;
-
-    public bool TryResolve(string name, out ICommand? cmd)
-    {
-        cmd = null;
-        if (_aliases.TryGetValue(name, out var target))
-            name = target;
-        return _commands.TryGetValue(name, out cmd);
-    }
-
-    public ICommand? TryGet(string name)
-    {
-        TryResolve(name, out var cmd);
-        return cmd;
-    }
-
-    public IEnumerable<string> ListNames() => _commands.Keys;
 }
 
 public sealed class ParsedArgs
@@ -214,8 +256,10 @@ public static class CommandLineParser
 
     public static CompletionSplit SplitForCompletion(string input)
     {
-        var s = new CompletionSplit();
-        s.HasTrailingSpace = input.Length > 0 && char.IsWhiteSpace(input.Last());
+        var s = new CompletionSplit
+        {
+            HasTrailingSpace = input.Length > 0 && char.IsWhiteSpace(input.Last())
+        };
 
         foreach (var t in Tokenize(input))
             s.Tokens.Add(t);

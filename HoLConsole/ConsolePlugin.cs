@@ -17,8 +17,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     public const string MODNAME = "HoLConsole";
     public const string MODGUID = "cc.lymone.HoL." + MODNAME;
     public const string VERSION = "1.0.0";
-
-    internal static ConsolePlugin Instance = null!;
+    
     internal new static ManualLogSource Logger = null!;
 
     private ConfigEntry<KeyCode> _toggleKey = null!;
@@ -60,7 +59,6 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void Awake()
     {
-        Instance = this;
         Logger = base.Logger;
 
         _toggleKey = Config.Bind("按键绑定 Bind Key", "命令行热键 Toggle Key",
@@ -75,16 +73,16 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
         _visible = _startOpen.Value;
 
-        ConsoleAPI.Initialize(this);
+        ConsoleCore.Initialize(this, Logger);
         RegisterBuiltinCommands();
         
-        ConsoleAPI.Print("______________________________________________________");
-        ConsoleAPI.Print($"HoLConsole v{VERSION}");
-        ConsoleAPI.Print("Copyright (c) 2026 LymoneLM | MIT Licensed Open Source");
-        ConsoleAPI.Print("GitHub Repository: https://github.com/LymoneLM/HoLMods");
-        ConsoleAPI.Print("______________________________________________________");
+        ConsoleCore.Print("______________________________________________________");
+        ConsoleCore.Print($"{MODNAME} v{VERSION}");
+        ConsoleCore.Print("Copyright (c) 2026 LymoneLM | MIT Licensed Open Source");
+        ConsoleCore.Print("GitHub Repository: https://github.com/LymoneLM/HoLMods");
+        ConsoleCore.Print("______________________________________________________");
         
-        Logger.LogInfo($"HoLConsole ready. Press [{_toggleKey.Value}] to open.");
+        Logger.LogInfo($"{MODNAME} ready. Press [{_toggleKey.Value}] to open.");
     }
 
     private void Update()
@@ -164,15 +162,13 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void DrawOutputArea()
     {
-        // We need scrollview height for bottom detection
         _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.ExpandHeight(true));
         foreach (var line in _outputLines)
         {
             GUILayout.Label(line.Text, StyleFor(line.Level));
         }
         GUILayout.EndScrollView();
-
-        // Track visible height (approx)
+        
         if (Event.current.type == EventType.Repaint)
             _lastScrollViewHeight = GUILayoutUtility.GetLastRect().height;
 
@@ -189,7 +185,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     {
         HandleInputEvents();
         GUI.SetNextControlName(INPUT_CONTROL_NAME);
-        _input = GUILayout.TextField(_input ?? "", GUILayout.ExpandWidth(true));
+        _input = GUILayout.TextField(_input, GUILayout.ExpandWidth(true));
         
         if (GUI.GetNameOfFocusedControl() == INPUT_CONTROL_NAME)
             _inputControlId = GUIUtility.keyboardControl;
@@ -235,11 +231,14 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         if (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter)
         {
             e.Use();
-            var line = (_input ?? "").Trim();
+            var line = _input.Trim();
             if (line.Length > 0)
             {
                 PushInputHistory(line);
-                ExecuteLine(line);
+                ConsoleCore.Execute(line);
+
+                if (IsNearBottom())
+                    _shouldScrollToBottom = true;
             }
             _input = "";
             ResetHistoryNav();
@@ -317,28 +316,6 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         }
     }
 
-    private void ExecuteLine(string line)
-    {
-        ConsoleAPI.Print($"> {line}", ConsoleLevel.Info);
-
-        try
-        {
-            var result = ConsoleAPI.Execute(line, Logger);
-            if (!string.IsNullOrWhiteSpace(result))
-                ConsoleAPI.Print(result, ConsoleLevel.Info);
-        }
-        catch (Exception ex)
-        {
-            ConsoleAPI.Print($"Exception: {ex.Message}", ConsoleLevel.Error);
-            ConsoleAPI.Print(ex.StackTrace ?? "(no stack)", ConsoleLevel.Error);
-            Logger.LogError(ex);
-        }
-
-        // only scroll if user already near bottom
-        if (IsNearBottom())
-            _shouldScrollToBottom = true;
-    }
-
     private void PushInputHistory(string line)
     {
         if (_inputHistory.Count == 0 || _inputHistory.Last() != line)
@@ -370,7 +347,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void ApplyAutocomplete(bool reverse)
     {
-        string current = _input ?? "";
+        string current = _input;
         var split = CommandLineParser.SplitForCompletion(current);
 
         // Determine what token is being completed
@@ -415,6 +392,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         }
 
         var cmd = ConsoleAPI.TryGetCommand(cmdName);
+        // ReSharper disable once SuspiciousTypeConversion.Global
         if (cmd is ICommandCompleter completer)
         {
             var ctx = new CompletionContext
@@ -472,7 +450,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             name: "help",
             description: "List commands or show help for a command.",
             usage: "help [command]",
-            handler: (ctx, args) =>
+            handler: (_, args) =>
             {
                 if (args.Positionals.Count == 0)
                 {
@@ -482,7 +460,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
                     foreach (var n in names)
                     {
                         var c = ConsoleAPI.TryGetCommand(n);
-                        if (c != null && !c.Hidden)
+                        if (c is { Hidden: false })
                             sb.AppendLine($"  {n} - {c.Description}");
                     }
                     sb.AppendLine("Type: help <command> for details.");
@@ -502,14 +480,14 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             name: "echo",
             description: "Print text.",
             usage: "echo <text...>",
-            handler: (ctx, args) => string.Join(" ", args.Positionals)
+            handler: (_, args) => string.Join(" ", args.Positionals)
         ));
 
         ConsoleAPI.RegisterCommand(new CommandDef(
             name: "clear",
             description: "Clear console output.",
             usage: "clear",
-            handler: (ctx, args) =>
+            handler: (_, _) =>
             {
                 _outputLines.Clear();
                 _shouldScrollToBottom = true;
