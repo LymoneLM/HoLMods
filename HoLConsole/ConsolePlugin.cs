@@ -496,6 +496,8 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         ));
 
         ConsoleAPI.RegisterAlias("cls", "clear");
+        
+        PropCommands.Register();
     }
 }
 
