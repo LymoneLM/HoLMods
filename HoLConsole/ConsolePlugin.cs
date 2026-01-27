@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using YuanAPI;
 
 namespace HoLConsole;
 
 [BepInPlugin(MODGUID, MODNAME, VERSION)]
+[BepInDependency(YuanAPIPlugin.MODGUID)]
 public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 {
     public const string MODNAME = "HoLConsole";
