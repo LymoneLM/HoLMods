@@ -12,8 +12,8 @@ using YuanAPI;
 
 namespace HoLConsole;
 
+[BepInDependency(YuanAPIPlugin.MODGUID, YuanAPIPlugin.VERSION)]
 [BepInPlugin(MODGUID, MODNAME, VERSION)]
-[BepInDependency(YuanAPIPlugin.MODGUID)]
 public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 {
     public const string MODNAME = "HoLConsole";
