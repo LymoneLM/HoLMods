@@ -35,7 +35,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private float _lastScrollViewHeight;
 
     private string _input = "";
-    private bool _focusInputNextFrame;
+    private int _focusInputCounter;
 
     // Output
     private readonly List<ConsoleLine> _outputLines = new();
@@ -52,7 +52,6 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private string _sessionKey = "";
 
     private const string INPUT_CONTROL_NAME = "HoLConsole_Input";
-    private int _inputControlId;
 
     // Cached styles
     private GUIStyle _styleInfo = null!;
@@ -93,7 +92,10 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         if (Input.GetKeyDown(_toggleKey.Value))
         {
             _visible = !_visible;
-            if (_visible) _focusInputNextFrame = true;
+            if (_visible) 
+            {
+                _focusInputCounter = 2;
+            }
         }
 
         if (_visible && Input.GetKeyDown(KeyCode.Escape))
@@ -186,24 +188,31 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private void DrawInputArea()
     {
         HandleInputEvents();
+        
         GUI.SetNextControlName(INPUT_CONTROL_NAME);
         _input = GUILayout.TextField(_input, GUILayout.ExpandWidth(true));
         
-        if (GUI.GetNameOfFocusedControl() == INPUT_CONTROL_NAME)
-            _inputControlId = GUIUtility.keyboardControl;
-        
-        if (_focusInputNextFrame)
+        // 处理焦点设置
+        if (_focusInputCounter > 0)
         {
-            _focusInputNextFrame = false;
-            GUI.FocusControl(INPUT_CONTROL_NAME);
-
-            GUIUtility.keyboardControl = _inputControlId;
-            var te = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), _inputControlId);
-            te.text = _input ?? "";  
-
-            var end = te.text.Length;
-            te.cursorIndex = end;
-            te.selectIndex = end;
+            if (Event.current.type == EventType.Layout)
+            {
+                GUI.FocusControl(INPUT_CONTROL_NAME);
+            }
+            else if (Event.current.type == EventType.Repaint)
+            {
+                _focusInputCounter--;
+                
+                // 移动光标到末尾
+                TextEditor te = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+                if (te != null)
+                {
+                    te.text = _input ?? "";
+                    int end = te.text.Length;
+                    te.cursorIndex = end;
+                    te.selectIndex = end;
+                }
+            }
         }
     }
 
@@ -245,7 +254,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             _input = "";
             ResetHistoryNav();
             ResetAutocomplete();
-            _focusInputNextFrame = true;
+            _focusInputCounter = 2;
             return;
         }
 
@@ -267,7 +276,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
             _input = _inputHistory[_historyIndex];
             ResetAutocomplete();
-            _focusInputNextFrame = true;
+            _focusInputCounter = 2;
             return;
         }
 
@@ -290,7 +299,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             }
 
             ResetAutocomplete();
-            _focusInputNextFrame = true;
+            _focusInputCounter = 2;
             return;
         }
 
@@ -300,7 +309,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             e.Use();
             bool reverse = e.shift;
             ApplyAutocomplete(reverse);
-            _focusInputNextFrame = true;
+            _focusInputCounter = 2;
             return;
         }
 
