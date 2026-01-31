@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -29,6 +29,9 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private bool _visible;
     private Rect _windowRect = new Rect(40, 40, 760, 420);
+    private float _uiScale = 1f;
+    private const float BASE_WIDTH = 1920f;
+    private const float BASE_HEIGHT = 1080f;
 
     private Vector2 _scrollPos;
     private bool _shouldScrollToBottom;
@@ -57,6 +60,13 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private GUIStyle _styleInfo = null!;
     private GUIStyle _styleWarn = null!;
     private GUIStyle _styleError = null!;
+    private GUIStyle _styleWindow = null!;
+    private GUIStyle _styleTextField = null!;
+    private GUIStyle _stylePrompt = null!;
+    
+    // Textures
+    private Texture2D _bgTexture = null!;
+    private Texture2D _inputBgTexture = null!;
 
     private void Awake()
     {
@@ -88,6 +98,12 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 
     private void Update()
     {
+        // 计算UI缩放比例
+        float scaleX = Screen.width / BASE_WIDTH;
+        float scaleY = Screen.height / BASE_HEIGHT;
+        _uiScale = Mathf.Min(scaleX, scaleY);
+        _uiScale = Mathf.Clamp(_uiScale, 0.5f, 2f); // 限制缩放范围
+
         // 按键
         if (Input.GetKeyDown(_toggleKey.Value))
         {
@@ -125,30 +141,103 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     {
         if (!_visible) return;
 
+        // 应用UI缩放
+        Matrix4x4 oldMatrix = GUI.matrix;
+        GUI.matrix = Matrix4x4.Scale(new Vector3(_uiScale, _uiScale, 1f));
+
         EnsureStyles();
 
         GUI.depth = 0;
-        _windowRect = GUILayout.Window(GetInstanceID(), _windowRect, DrawWindow, $"HoLConsole v{VERSION}");
+        
+        // 调整窗口大小以适应缩放
+        Rect scaledRect = new Rect(
+            _windowRect.x / _uiScale,
+            _windowRect.y / _uiScale,
+            _windowRect.width / _uiScale,
+            _windowRect.height / _uiScale
+        );
+        
+        scaledRect = GUILayout.Window(GetInstanceID(), scaledRect, DrawWindow, $"HoLConsole v{VERSION}", _styleWindow);
+        
+        _windowRect = new Rect(
+            scaledRect.x * _uiScale,
+            scaledRect.y * _uiScale,
+            scaledRect.width * _uiScale,
+            scaledRect.height * _uiScale
+        );
+
+        GUI.matrix = oldMatrix;
+    }
+
+    private Texture2D MakeTex(int width, int height, Color col)
+    {
+        Color[] pix = new Color[width * height];
+        for (int i = 0; i < pix.Length; i++)
+            pix[i] = col;
+        
+        Texture2D result = new Texture2D(width, height);
+        result.SetPixels(pix);
+        result.Apply();
+        return result;
     }
 
     private void EnsureStyles()
     {
         if (_styleInfo != null!) return;
 
+        // 创建统一的半透明背景纹理
+        _bgTexture = MakeTex(2, 2, new Color(0.08f, 0.08f, 0.08f, 0.92f));
+        _inputBgTexture = MakeTex(2, 2, new Color(0.12f, 0.12f, 0.12f, 0.95f));
+
+        // 窗口样式 - 简化设计
+        _styleWindow = new GUIStyle(GUI.skin.window)
+        {
+            normal = { background = _bgTexture, textColor = new Color(0.85f, 0.85f, 0.85f) },
+            onNormal = { background = _bgTexture, textColor = new Color(0.85f, 0.85f, 0.85f) },
+            fontSize = 14,
+            padding = new RectOffset(8, 8, 24, 8),
+            border = new RectOffset(2, 2, 2, 2)
+        };
+
+        // 输入框样式 - 去除默认边框
+        _styleTextField = new GUIStyle(GUI.skin.textField)
+        {
+            normal = { textColor = new Color(0.9f, 0.9f, 0.9f), background = _inputBgTexture },
+            hover = { textColor = new Color(0.9f, 0.9f, 0.9f), background = _inputBgTexture },
+            focused = { textColor = Color.white, background = _inputBgTexture },
+            fontSize = 15,
+            padding = new RectOffset(4, 4, 4, 4),
+            border = new RectOffset(0, 0, 0, 0)
+        };
+
+        // 提示符样式 - 与输入框对齐
+        _stylePrompt = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 15,
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = new Color(0.5f, 0.9f, 0.5f) },
+            padding = new RectOffset(0, 4, 4, 4),
+            alignment = TextAnchor.MiddleCenter
+        };
+
+        // 文本样式
         _styleInfo = new GUIStyle(GUI.skin.label)
         {
             wordWrap = true,
-            normal = { textColor = Color.white }
+            fontSize = 15,
+            normal = { textColor = new Color(0.85f, 0.85f, 0.85f) },
+            padding = new RectOffset(2, 2, 1, 1),
+            margin = new RectOffset(0, 0, 0, 0)
         };
 
         _styleWarn = new GUIStyle(_styleInfo)
         {
-            normal = { textColor = new Color(1f, 0.8f, 0.2f) }
+            normal = { textColor = new Color(1f, 0.85f, 0.3f) }
         };
 
         _styleError = new GUIStyle(_styleInfo)
         {
-            normal = { textColor = new Color(1f, 0.35f, 0.35f) }
+            normal = { textColor = new Color(1f, 0.4f, 0.4f) }
         };
     }
 
@@ -167,10 +256,12 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
     private void DrawOutputArea()
     {
         _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUILayout.ExpandHeight(true));
+        
         foreach (var line in _outputLines)
         {
             GUILayout.Label(line.Text, StyleFor(line.Level));
         }
+        
         GUILayout.EndScrollView();
         
         if (Event.current.type == EventType.Repaint)
@@ -181,16 +272,23 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
             _scrollPos.y = float.MaxValue;
             _shouldScrollToBottom = false;
         }
-
-        GUILayout.Space(6);
+        
+        GUILayout.Space(4);
     }
 
     private void DrawInputArea()
     {
         HandleInputEvents();
         
+        GUILayout.BeginHorizontal();
+        
+        // 添加提示符 - 使用专门的样式对齐
+        GUILayout.Label(">", _stylePrompt, GUILayout.Width(20));
+        
         GUI.SetNextControlName(INPUT_CONTROL_NAME);
-        _input = GUILayout.TextField(_input, GUILayout.ExpandWidth(true));
+        _input = GUILayout.TextField(_input, _styleTextField, GUILayout.ExpandWidth(true));
+        
+        GUILayout.EndHorizontal();
         
         // 处理焦点设置
         if (_focusInputCounter > 0)
@@ -511,4 +609,3 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         PropCommands.Register();
     }
 }
-
