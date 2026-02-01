@@ -11,8 +11,8 @@ internal static class PropCommands
     {
         ConsoleAPI.RegisterCommand(new CommandDef(
             name: "give",
-            description: "Give a prop (default: free, no storage cost)",
-            usage: "give <PropID> [Count] [--free|--cost|--storage[=true|false]] [--silent|-s]",
+            description: "Give a prop (default: no storage cost)",
+            usage: "give <PropID> [Count] [--cost[=true|false]] [--silent|-s]",
             handler: GiveHandler
         ));
     }
@@ -20,7 +20,7 @@ internal static class PropCommands
     private static string GiveHandler(CommandContext ctx, ParsedArgs args)
     {
         if (args.Positionals.Count < 1)
-            return "Usage: give <PropID> [Count] [--free|--cost|--storage[=true|false]] [--silent|-s]\nExample: give 12 5 --free";
+            return "Usage: give <PropID> [Count] [--cost[=true|false]] [--silent|-s]\nExample: give 12 5 --cost=true";
         
         if (!int.TryParse(args.Positionals[0], out var id))
             return $"Invalid PropID: \"{args.Positionals[0]}\" (must be integer)";
@@ -55,37 +55,27 @@ internal static class PropCommands
         if (!ok)
         {
             if (storage)
-                return $"Failed to add prop {id} x{count} (invalid PropID or insufficient storage)";
-            return $"Failed to add prop {id} x{count} (invalid PropID)";
+                return $"Failed to add prop [{id}]*{count} (invalid PropID or insufficient storage)";
+            return $"Failed to add prop [{id}]*{count} (invalid PropID)";
         }
 
         return storage
-            ? $"OK: added prop {id} x{count} (storage consumed)"
-            : $"OK: added prop {id} x{count}";
+            ? $"OK: added prop [{id}]*{count} (storage consumed)"
+            : $"OK: added prop [{id}]*{count}";
     }
 
     private static bool ResolveStorageFlag(ParsedArgs args)
     {
-        bool storage = false;
-        
-        if (args.HasFlag("free"))
-            return false;
-        
-        if (args.HasFlag("cost") || args.HasFlag("buy"))
-            return true;
-        
-        if (args.HasFlag("storage"))
+        if (args.HasFlag("cost"))
         {
-            var v = args.GetFlag("storage");
-            if (v == null) return true;
+            var v = args.GetFlag("cost");
+            if (v == null) return false;
 
             if (TryParseBoolLoose(v, out var b))
                 return b;
-            
-            return storage;
         }
 
-        return storage;
+        return false;
     }
 
     private static bool TryParseBoolLoose(string s, out bool b)
