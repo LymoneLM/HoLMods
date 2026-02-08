@@ -25,13 +25,14 @@ public static class BuildingCommands
     
     private static string LoadCheckBuildings(CommandContext ctx, ParsedArgs args)
     {
+        BuildBuildingInto();
         Mainload.BuildInto_m = _buildIntoM;
         ctx.Print("Start refresh scene", ConsoleLevel.Info);
         Mainload.isUpdateScene = true;
         return "Check buildings loaded successfully.";
     }
 
-    static BuildingCommands()
+    private static void BuildBuildingInto()
     {
         var index = 0;
         foreach(var pos in _buildingList)
@@ -39,6 +40,7 @@ public static class BuildingCommands
             _buildIntoM.Add([
                 $"CHECK{index++}",
                 pos[0].ToString(),
+                "1",
                 "0",
                 "1",
                 "0|0",
