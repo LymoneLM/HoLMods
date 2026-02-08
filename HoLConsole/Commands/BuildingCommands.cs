@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
 
 namespace HoLConsole;
 
@@ -11,6 +14,12 @@ public static class BuildingCommands
             description: "[调试指令]府邸场景加载检测建筑集，需提前清空场景",
             usage: "Load-CheckBuildings",
             handler: LoadCheckBuildings
+        ));
+        ConsoleAPI.RegisterCommand(new CommandDef(
+            name: "Check-BuildingCollision",
+            description: "[调试指令]根据当前场景建筑统计建筑碰撞体积",
+            usage: "Check-BuildingCollision",
+            handler: RecordAllDragInfo.RecordAllDragCoordinates
         ));
     }
     
@@ -150,4 +159,220 @@ public static class BuildingCommands
     ];
 
     private static List<List<string>> _buildIntoM = [];
+}
+
+public static class RecordAllDragInfo
+{
+    public static string RecordAllDragCoordinates(CommandContext ctx, ParsedArgs _)
+    {
+        try
+        {
+            // 1) 找到 AllBuild/BackMap（常驻）
+            var allBuildGo = GameObject.Find("AllBuild");
+            if (allBuildGo == null)
+            {
+                ctx.Logger.LogWarning("[RecordAllDragCoordinates] Cannot find GameObject: AllBuild");
+                return "失败：找不到AllBuild";
+            }
+
+            var backMap = allBuildGo.transform.Find("BackMap");
+            if (backMap == null)
+            {
+                ctx.Logger.LogWarning("[RecordAllDragCoordinates] Cannot find Transform: AllBuild/BackMap");
+                return "失败：找不到BackMap";
+            }
+
+            // 2) BackMap 下一层只有一个对象（如 25(Clone)）
+            var cloneRoot = backMap.GetChild(0);
+
+            // 3) 进入 BuildShow（名字固定）
+            var buildShow = cloneRoot.Find("BuildShow");
+            if (buildShow == null)
+            {
+                ctx.Logger.LogWarning($"[RecordAllDragCoordinates] Cannot find Transform: {cloneRoot.name}/BuildShow");
+                return "失败：找不到BuildShow";
+            }
+
+            // 4) 收集所有记录
+            var records = new List<DragRecord>();
+
+            // 遍历BuildShow的所有子对象
+            for (var i = 0; i < buildShow.childCount; i++)
+            {
+                var levelA = buildShow.GetChild(i);
+
+                // 获取PerBuildScene组件
+                var perBuildScene = levelA.GetComponent<PerBuildScene>();
+                if (perBuildScene == null)
+                {
+                    ctx.Logger.LogWarning($"[RecordAllDragCoordinates] Skipping '{levelA.name}' - no PerBuildScene component found.");
+                    continue;
+                }
+
+                // 5) 这一层里面还会套一层名字不定的对象（一定只有一个）
+                var levelB = levelA.GetChild(0);
+
+                // 6) 找到 AllDrag 节点
+                var allDrag = levelB.Find("UI/AllDrag");
+                if (allDrag == null)
+                {
+                    ctx.Logger.LogInfo($"[RecordAllDragCoordinates] Not found AllDrag under: {GetHierarchyPath(levelB)}");
+                    continue;
+                }
+
+                // 7) 记录AllDrag的所有子对象
+                // 解析所有子对象的坐标
+                var coordinates = new List<Vector2Int>();
+                var hasValidCoordinates = false;
+                
+                for (var j = 0; j < allDrag.childCount; j++)
+                {
+                    var child = allDrag.GetChild(j);
+                    if (ParseCoordinate(child.name, out var coord))
+                    {
+                        coordinates.Add(coord);
+                        hasValidCoordinates = true;
+                    }
+                    else
+                    {
+                        ctx.Logger.LogWarning($"[RecordAllDragCoordinates] Invalid coordinate format '{child.name}' under {GetHierarchyPath(allDrag)}");
+                    }
+                }
+
+                if (!hasValidCoordinates)
+                {
+                    ctx.Logger.LogWarning($"[RecordAllDragCoordinates] No valid coordinates found under {GetHierarchyPath(allDrag)}");
+                    continue;
+                }
+
+                // 8) 找到最小和最大坐标
+                var minCoord = coordinates[0];
+                var maxCoord = coordinates[0];
+                
+                foreach (var coord in coordinates)
+                {
+                    // 最小坐标：A和B分别小于等于其他坐标的A和B
+                    if (coord.x < minCoord.x || (coord.x == minCoord.x && coord.y < minCoord.y))
+                    {
+                        minCoord = coord;
+                    }
+                    
+                    // 最大坐标：A和B分别大于等于其他坐标的A和B
+                    if (coord.x > maxCoord.x || (coord.x == maxCoord.x && coord.y > maxCoord.y))
+                    {
+                        maxCoord = coord;
+                    }
+                }
+
+                // 9) 创建记录
+                var record = new DragRecord
+                {
+                    BuildClassID = perBuildScene.buildClassID,
+                    BuildStateID = perBuildScene.buildstateID,
+                    MinCoordA = minCoord.x,
+                    MinCoordB = minCoord.y,
+                    MaxCoordA = maxCoord.x,
+                    MaxCoordB = maxCoord.y,
+                    TotalCoordinates = coordinates.Count
+                };
+                
+                records.Add(record);
+            }
+
+            SaveCSVToFile(GenerateCSV(records));
+            // 生成CSV，将CSV保存到文件或返回
+            return $"Succeed";
+        }
+        catch (Exception ex)
+        {
+            ctx.Logger.LogError($"[RecordAllDragCoordinates] Error: {ex.Message}");
+            return $"失败：{ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// 解析坐标字符串，格式为"A|B"
+    /// </summary>
+    private static bool ParseCoordinate(string coordinateStr, out Vector2Int coordinate)
+    {
+        coordinate = Vector2Int.zero;
+        
+        if (string.IsNullOrEmpty(coordinateStr))
+            return false;
+            
+        var parts = coordinateStr.Split('|');
+        if (parts.Length != 2)
+            return false;
+            
+        if (int.TryParse(parts[0].Trim(), out var a) && int.TryParse(parts[1].Trim(), out var b))
+        {
+            coordinate = new Vector2Int(a, b);
+            return true;
+        }
+        
+        return false;
+    }
+
+    /// <summary>
+    /// 生成CSV字符串
+    /// </summary>
+    private static string GenerateCSV(List<DragRecord> records)
+    {
+        var csvBuilder = new StringBuilder();
+        
+        // CSV头部
+        csvBuilder.AppendLine("buildClassID,buildStateID,minA,minB,maxA,maxB,totalCoordinates");
+        
+        // 数据行
+        foreach (var record in records)
+        {
+            csvBuilder.AppendLine(
+                $"{record.BuildClassID},{record.BuildStateID},{record.MinCoordA},{record.MinCoordB},{record.MaxCoordA},{record.MaxCoordB},{record.TotalCoordinates}");
+        }
+        
+        return csvBuilder.ToString();
+    }
+
+    /// <summary>
+    /// 保存CSV到文件
+    /// </summary>
+    private static void SaveCSVToFile(string csv)
+    {
+        var fileName = $"AllBuildingCollision{"_v" + Mainload.Vision_now.Substring(2)}.csv";
+        System.IO.File.WriteAllText(fileName, csv);
+    }
+
+    /// <summary>
+    /// 获取游戏对象层级路径（辅助函数）
+    /// </summary>
+    private static string GetHierarchyPath(Transform transform)
+    {
+        if (transform == null)
+            return "null";
+            
+        var path = new List<string>();
+        var current = transform;
+        
+        while (current != null)
+        {
+            path.Insert(0, current.name);
+            current = current.parent;
+        }
+        
+        return string.Join("/", path);
+    }
+
+    /// <summary>
+    /// 记录数据结构
+    /// </summary>
+    private class DragRecord
+    {
+        public string BuildClassID { get; set; }
+        public int BuildStateID { get; set; }
+        public int MinCoordA { get; set; }
+        public int MinCoordB { get; set; }
+        public int MaxCoordA { get; set; }
+        public int MaxCoordB { get; set; }
+        public int TotalCoordinates { get; set; }
+    }
 }
