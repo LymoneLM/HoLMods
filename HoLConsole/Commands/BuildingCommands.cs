@@ -10,371 +10,124 @@ public static class BuildingCommands
     public static void Register()
     {
         ConsoleAPI.RegisterCommand(new CommandDef(
-            name: "Load-CheckBuildings",
-            description: "[调试指令]府邸场景加载检测建筑集，需提前清空场景",
-            usage: "Load-CheckBuildings",
-            handler: LoadCheckBuildings
-        ));
-        ConsoleAPI.RegisterCommand(new CommandDef(
-            name: "Check-BuildingCollision",
-            description: "[调试指令]根据当前场景建筑统计建筑碰撞体积",
-            usage: "Check-BuildingCollision",
-            handler: RecordAllDragInfo.RecordAllDragCoordinates
+            name: "check-BuildingCollision",
+            description: "[调试指令]依次加载已记录的所有建筑，统计其碰撞体积",
+            usage: "check-BuildingCollision",
+            handler: CalculateBuildingCollisions
         ));
     }
     
-    private static string LoadCheckBuildings(CommandContext ctx, ParsedArgs args)
-    {
-        BuildBuildingInto();
-        Mainload.BuildInto_m = _buildIntoM;
-        ctx.Print("Start refresh scene", ConsoleLevel.Info);
-        Mainload.isUpdateScene = true;
-        return "Check buildings loaded successfully.";
-    }
-
-    private static void BuildBuildingInto()
-    {
-        var index = 0;
-        foreach(var pos in _buildingList)
-        {
-            _buildIntoM.Add([
-                $"CHECK{index++}",
-                pos[0].ToString(),
-                "1",
-                "0",
-                "1",
-                "0|0",
-                pos[1].ToString(),
-                "0"
-            ]);
-        }
-    }
-    
-    private static List<List<int>> _buildingList =
-    [
-        [0, -1], [0, -2], [0, -3], [0, -4], [0, 0], [0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [1, 3], [10, -1],
-        [10, -2], [10, -3], [10, -4], [10, 0], [10, 1], [10, 2], [10, 3], [100, 0], [100, 1], [100, 2], [100, 3],
-        [101, 0], [101, 1], [101, 2], [101, 3], [102, 0], [102, 1], [102, 2], [102, 3], [103, 0], [103, 1], [103, 2],
-        [103, 3], [104, 0], [104, 1], [104, 2], [104, 3], [105, 0], [105, 1], [105, 2], [105, 3], [106, 0], [106, 1],
-        [106, 2], [106, 3], [107, 0], [107, 1], [107, 2], [107, 3], [108, 0], [108, 1], [108, 2], [108, 3], [109, 0],
-        [109, 1], [109, 2], [109, 3], [11, -1], [11, -2], [11, -3], [11, -4], [11, 0], [11, 1], [11, 2], [11, 3],
-        [110, 0], [110, 1], [110, 2], [110, 3], [111, 0], [111, 1], [111, 2], [111, 3], [112, 0], [112, 1], [112, 2],
-        [112, 3], [113, 0], [113, 1], [113, 2], [113, 3], [114, 0], [114, 1], [114, 2], [114, 3], [115, 0], [115, 1],
-        [115, 2], [115, 3], [116, 0], [116, 1], [116, 2], [116, 3], [117, -1], [117, -2], [117, -3], [117, -4],
-        [117, 0], [117, 1], [117, 2], [117, 3], [118, -1], [118, -2], [118, -3], [118, -4], [118, 0], [118, 1],
-        [118, 2], [118, 3], [119, -1], [119, -2], [119, -3], [119, -4], [119, 0], [119, 1], [119, 2], [119, 3],
-        [12, -1], [12, -2], [12, -3], [12, -4], [12, 0], [12, 1], [12, 2], [12, 3], [120, -1], [120, -2], [120, -3],
-        [120, -4], [120, 0], [120, 1], [120, 2], [120, 3], [121, -1], [121, -2], [121, -3], [121, -4], [121, 0],
-        [121, 1], [121, 2], [121, 3], [122, -1], [122, -2], [122, -3], [122, -4], [122, 0], [122, 1], [122, 2],
-        [122, 3], [123, -1], [123, -2], [123, -3], [123, -4], [123, 0], [123, 1], [123, 2], [123, 3], [124, -1],
-        [124, -2], [124, -3], [124, -4], [124, 0], [124, 1], [124, 2], [124, 3], [125, 0], [125, 1], [125, 2], [125, 3],
-        [126, 0], [127, 0], [128, 0], [129, 0], [129, 1], [129, 2], [129, 3], [13, -1], [13, -2], [13, -3], [13, -4],
-        [13, 0], [13, 1], [13, 2], [13, 3], [130, 0], [130, 1], [130, 2], [130, 3], [131, 0], [131, 1], [131, 2],
-        [131, 3], [132, 0], [133, 0], [133, 1], [133, 2], [133, 3], [134, -1], [134, -2], [134, -3], [134, -4],
-        [134, 0], [134, 1], [134, 2], [134, 3], [135, -1], [135, -2], [135, -3], [135, -4], [135, 0], [135, 1],
-        [135, 2], [135, 3], [136, -1], [136, -2], [136, -3], [136, -4], [136, 0], [136, 1], [136, 2], [136, 3],
-        [137, -1], [137, -2], [137, -3], [137, -4], [137, 0], [137, 1], [137, 2], [137, 3], [138, -1], [138, -2],
-        [138, -3], [138, -4], [138, 0], [138, 1], [138, 2], [138, 3], [139, -1], [139, -2], [139, -3], [139, -4],
-        [139, 0], [139, 1], [139, 2], [139, 3], [14, -1], [14, -2], [14, -3], [14, -4], [14, 0], [14, 1], [14, 2],
-        [14, 3], [140, -1], [140, -2], [140, -3], [140, -4], [140, 0], [140, 1], [140, 2], [140, 3], [141, -1],
-        [141, -2], [141, -3], [141, -4], [141, 0], [141, 1], [141, 2], [141, 3], [142, -1], [142, -2], [142, -3],
-        [142, -4], [142, 0], [142, 1], [142, 2], [142, 3], [143, -1], [143, -2], [143, -3], [143, -4], [143, 0],
-        [143, 1], [143, 2], [143, 3], [144, -1], [144, -2], [144, -3], [144, -4], [144, 0], [144, 1], [144, 2],
-        [144, 3], [145, -1], [145, -2], [145, -3], [145, -4], [145, 0], [145, 1], [145, 2], [145, 3], [146, -1],
-        [146, -2], [146, -3], [146, -4], [146, 0], [146, 1], [146, 2], [146, 3], [147, -1], [147, -2], [147, -3],
-        [147, -4], [147, 0], [147, 1], [147, 2], [147, 3], [148, -1], [148, -2], [148, -3], [148, -4], [148, 0],
-        [148, 1], [148, 2], [148, 3], [149, -1], [149, -2], [149, -3], [149, -4], [149, 0], [149, 1], [149, 2],
-        [149, 3], [15, -1], [15, -2], [15, -3], [15, -4], [15, 0], [15, 1], [15, 2], [15, 3], [150, -1], [150, -2],
-        [150, -3], [150, -4], [150, 0], [150, 1], [150, 2], [150, 3], [151, 0], [151, 1], [151, 2], [151, 3], [152, 0],
-        [152, 1], [152, 2], [152, 3], [153, 0], [153, 1], [153, 2], [153, 3], [154, -1], [154, -2], [154, -3],
-        [154, -4], [154, 0], [154, 1], [154, 2], [154, 3], [155, 0], [155, 1], [155, 2], [155, 3], [156, 0], [156, 1],
-        [156, 2], [156, 3], [157, 0], [157, 1], [157, 2], [157, 3], [158, 0], [158, 1], [158, 2], [158, 3], [159, 0],
-        [159, 1], [159, 2], [159, 3], [16, -1], [16, -2], [16, -3], [16, -4], [16, 0], [16, 1], [16, 2], [16, 3],
-        [160, 0], [160, 1], [160, 2], [160, 3], [161, 0], [161, 1], [161, 2], [161, 3], [162, 0], [162, 1], [162, 2],
-        [162, 3], [163, 0], [163, 1], [163, 2], [163, 3], [164, 0], [164, 1], [164, 2], [164, 3], [165, 0], [165, 1],
-        [165, 2], [165, 3], [166, 0], [166, 1], [166, 2], [166, 3], [167, 0], [167, 1], [167, 2], [167, 3], [168, 0],
-        [168, 1], [168, 2], [168, 3], [169, -1], [169, -2], [169, -3], [169, -4], [169, 0], [169, 1], [169, 2],
-        [169, 3], [17, 0], [17, 1], [17, 2], [17, 3], [170, -1], [170, -2], [170, -3], [170, -4], [170, 0], [170, 1],
-        [170, 2], [170, 3], [171, 0], [171, 1], [171, 2], [171, 3], [172, 0], [172, 1], [172, 2], [172, 3], [173, 0],
-        [173, 1], [173, 2], [173, 3], [174, 0], [174, 1], [174, 2], [174, 3], [175, 0], [175, 1], [175, 2], [175, 3],
-        [176, 0], [176, 1], [176, 2], [176, 3], [177, 0], [177, 1], [177, 2], [177, 3], [178, 0], [178, 1], [178, 2],
-        [178, 3], [179, 0], [179, 1], [179, 2], [179, 3], [18, 0], [18, 1], [18, 2], [18, 3], [180, 0], [180, 1],
-        [180, 2], [180, 3], [181, 0], [181, 1], [181, 2], [181, 3], [182, 0], [182, 1], [182, 2], [182, 3], [183, 0],
-        [183, 1], [183, 2], [183, 3], [184, 0], [184, 1], [184, 2], [184, 3], [185, 0], [185, 1], [185, 2], [185, 3],
-        [186, 0], [186, 1], [186, 2], [186, 3], [187, 0], [187, 1], [187, 2], [187, 3], [188, 0], [188, 1], [188, 2],
-        [188, 3], [189, 0], [189, 1], [189, 2], [189, 3], [19, -1], [19, -2], [19, -3], [19, -4], [19, 0], [19, 1],
-        [19, 2], [19, 3], [190, 0], [190, 1], [190, 2], [190, 3], [191, 0], [191, 1], [191, 2], [191, 3], [192, 0],
-        [192, 1], [192, 2], [192, 3], [193, 0], [193, 1], [193, 2], [193, 3], [194, 0], [194, 1], [194, 2], [194, 3],
-        [195, 0], [195, 1], [195, 2], [195, 3], [196, 0], [196, 1], [196, 2], [196, 3], [197, 0], [197, 1], [197, 2],
-        [197, 3], [198, 0], [198, 1], [198, 2], [198, 3], [199, 0], [199, 1], [199, 2], [199, 3], [2, 0], [2, 1],
-        [2, 2], [2, 3], [20, -1], [20, -2], [20, -3], [20, -4], [20, 0], [20, 1], [20, 2], [20, 3], [200, 0], [200, 1],
-        [200, 2], [200, 3], [201, 0], [202, 0], [203, 0], [204, 0], [205, 0], [206, 0], [207, 0], [208, 0], [209, 0],
-        [209, 1], [209, 2], [209, 3], [21, -1], [21, -2], [21, -3], [21, -4], [21, 0], [21, 1], [21, 2], [21, 3],
-        [210, 0], [210, 1], [210, 2], [210, 3], [211, 0], [211, 1], [211, 2], [211, 3], [212, 0], [212, 1], [212, 2],
-        [212, 3], [213, 0], [213, 1], [213, 2], [213, 3], [214, 0], [214, 1], [214, 2], [214, 3], [215, 0], [215, 1],
-        [215, 2], [215, 3], [216, 0], [216, 1], [216, 2], [216, 3], [217, 0], [217, 1], [217, 2], [217, 3], [218, 0],
-        [218, 1], [218, 2], [218, 3], [219, 0], [219, 1], [219, 2], [219, 3], [22, -1], [22, -2], [22, -3], [22, -4],
-        [22, 0], [22, 1], [22, 2], [22, 3], [220, 0], [220, 1], [220, 2], [220, 3], [221, 0], [221, 1], [221, 2],
-        [221, 3], [222, 0], [222, 1], [222, 2], [222, 3], [223, 0], [223, 1], [223, 2], [223, 3], [224, 0], [224, 1],
-        [224, 2], [224, 3], [225, 0], [225, 1], [225, 2], [225, 3], [226, 0], [226, 1], [226, 2], [226, 3], [227, -1],
-        [227, -2], [227, -3], [227, -4], [227, 0], [227, 1], [227, 2], [227, 3], [228, -1], [228, -2], [228, -3],
-        [228, -4], [228, 0], [228, 1], [228, 2], [228, 3], [229, -1], [229, -2], [229, -3], [229, -4], [229, 0],
-        [229, 1], [229, 2], [229, 3], [23, 0], [23, 1], [23, 2], [23, 3], [230, -1], [230, -2], [230, -3], [230, -4],
-        [230, 0], [230, 1], [230, 2], [230, 3], [231, -1], [231, -2], [231, -3], [231, -4], [231, 0], [231, 1],
-        [231, 2], [231, 3], [232, 0], [232, 1], [232, 2], [232, 3], [233, 0], [233, 1], [233, 2], [233, 3], [234, 0],
-        [234, 1], [234, 2], [234, 3], [235, 0], [235, 1], [235, 2], [235, 3], [236, 0], [236, 1], [236, 2], [236, 3],
-        [237, 0], [237, 1], [237, 2], [237, 3], [238, 0], [238, 1], [238, 2], [238, 3], [239, 0], [239, 1], [239, 2],
-        [239, 3], [24, 0], [24, 1], [24, 2], [24, 3], [25, 0], [25, 1], [25, 2], [25, 3], [26, 0], [26, 1], [26, 2],
-        [26, 3], [27, 0], [27, 1], [27, 2], [27, 3], [28, 0], [28, 1], [28, 2], [28, 3], [29, 0], [29, 1], [29, 2],
-        [29, 3], [3, 0], [3, 1], [3, 2], [3, 3], [30, 0], [30, 1], [30, 2], [30, 3], [31, 0], [31, 1], [31, 2], [31, 3],
-        [32, 0], [32, 1], [32, 2], [32, 3], [33, 0], [33, 1], [33, 2], [33, 3], [34, 0], [34, 1], [34, 2], [34, 3],
-        [35, 0], [35, 1], [35, 2], [35, 3], [36, 0], [36, 1], [36, 2], [36, 3], [37, 0], [37, 1], [37, 2], [37, 3],
-        [38, 0], [38, 1], [38, 2], [38, 3], [39, 0], [39, 1], [39, 2], [39, 3], [4, 0], [4, 1], [4, 2], [4, 3], [40, 0],
-        [40, 1], [40, 2], [40, 3], [41, 0], [41, 1], [41, 2], [41, 3], [42, 0], [42, 1], [42, 2], [42, 3], [43, 0],
-        [43, 1], [43, 2], [43, 3], [44, 0], [44, 1], [44, 2], [44, 3], [45, 0], [45, 1], [45, 2], [45, 3], [46, 0],
-        [46, 1], [46, 2], [46, 3], [47, 0], [47, 1], [47, 2], [47, 3], [48, 0], [48, 1], [48, 2], [48, 3], [49, 0],
-        [49, 1], [49, 2], [49, 3], [5, 0], [5, 1], [5, 2], [5, 3], [50, 0], [50, 1], [50, 2], [50, 3], [51, 0], [51, 1],
-        [51, 2], [51, 3], [52, -1], [52, -2], [52, -3], [52, -4], [52, 0], [52, 1], [52, 2], [52, 3], [53, -1],
-        [53, -2], [53, -3], [53, -4], [53, 0], [53, 1], [53, 2], [53, 3], [54, -1], [54, -2], [54, -3], [54, -4],
-        [54, 0], [54, 1], [54, 2], [54, 3], [55, -1], [55, -2], [55, -3], [55, -4], [55, 0], [55, 1], [55, 2], [55, 3],
-        [56, -1], [56, -2], [56, -3], [56, -4], [56, 0], [56, 1], [56, 2], [56, 3], [57, -1], [57, -2], [57, -3],
-        [57, -4], [57, 0], [57, 1], [57, 2], [57, 3], [58, -1], [58, -2], [58, -3], [58, -4], [58, 0], [58, 1], [58, 2],
-        [58, 3], [59, -1], [59, -2], [59, -3], [59, -4], [59, 0], [59, 1], [59, 2], [59, 3], [6, 0], [6, 1], [6, 2],
-        [6, 3], [60, -1], [60, -2], [60, -3], [60, -4], [60, 0], [60, 1], [60, 2], [60, 3], [61, -1], [61, -2],
-        [61, -3], [61, -4], [61, 0], [61, 1], [61, 2], [61, 3], [62, -1], [62, -2], [62, -3], [62, -4], [62, 0],
-        [62, 1], [62, 2], [62, 3], [63, -1], [63, -2], [63, -3], [63, -4], [63, 0], [63, 1], [63, 2], [63, 3], [64, -1],
-        [64, -2], [64, -3], [64, -4], [64, 0], [64, 1], [64, 2], [64, 3], [65, 0], [65, 1], [65, 2], [65, 3], [66, 0],
-        [66, 1], [66, 2], [66, 3], [67, 0], [67, 1], [67, 2], [67, 3], [68, 0], [68, 1], [68, 2], [68, 3], [69, 0],
-        [69, 1], [69, 2], [69, 3], [7, 0], [7, 1], [7, 2], [7, 3], [70, 0], [70, 1], [70, 2], [70, 3], [71, 0], [71, 1],
-        [71, 2], [71, 3], [72, 0], [72, 1], [72, 2], [72, 3], [73, 0], [73, 1], [73, 2], [73, 3], [74, 0], [74, 1],
-        [74, 2], [74, 3], [75, 0], [75, 1], [75, 2], [75, 3], [76, 0], [76, 1], [76, 2], [76, 3], [77, 0], [77, 1],
-        [77, 2], [77, 3], [78, 0], [78, 1], [78, 2], [78, 3], [79, 0], [79, 1], [79, 2], [79, 3], [8, 0], [8, 1],
-        [8, 2], [8, 3], [80, 0], [80, 1], [80, 2], [80, 3], [81, 0], [81, 1], [81, 2], [81, 3], [82, 0], [82, 1],
-        [82, 2], [82, 3], [83, 0], [83, 1], [83, 2], [83, 3], [84, 0], [84, 1], [84, 2], [84, 3], [85, 0], [85, 1],
-        [85, 2], [85, 3], [86, -1], [86, -2], [86, -3], [86, -4], [86, 0], [86, 1], [86, 2], [86, 3], [87, 0], [87, 1],
-        [87, 2], [87, 3], [88, 0], [88, 1], [88, 2], [88, 3], [89, 0], [89, 1], [89, 2], [89, 3], [9, -1], [9, -2],
-        [9, -3], [9, -4], [9, 0], [9, 1], [9, 2], [9, 3], [90, 0], [90, 1], [90, 2], [90, 3], [91, 0], [91, 1], [91, 2],
-        [91, 3], [92, 0], [92, 1], [92, 10], [92, 11], [92, 12], [92, 2], [92, 3], [92, 4], [92, 5], [92, 6], [92, 7],
-        [92, 8], [92, 9], [93, 0], [93, 1], [93, 2], [93, 3], [94, 0], [94, 1], [94, 2], [94, 3], [95, 0], [95, 1],
-        [95, 2], [95, 3], [96, 0], [96, 1], [96, 2], [96, 3], [97, 0], [97, 1], [97, 2], [97, 3], [98, 0], [98, 1],
-        [98, 2], [98, 3], [99, 0], [99, 1], [99, 2], [99, 3]
-    ];
-
-    private static List<List<string>> _buildIntoM = [];
-}
-
-public static class RecordAllDragInfo
-{
-    public static string RecordAllDragCoordinates(CommandContext ctx, ParsedArgs _)
+    public static string CalculateBuildingCollisions(CommandContext ctx, ParsedArgs _)
     {
         try
         {
-            // 1) 找到 AllBuild/BackMap（常驻）
-            var allBuildGo = GameObject.Find("AllBuild");
-            if (allBuildGo == null)
-            {
-                ctx.Logger.LogWarning("[RecordAllDragCoordinates] Cannot find GameObject: AllBuild");
-                return "失败：找不到AllBuild";
-            }
-
-            var backMap = allBuildGo.transform.Find("BackMap");
-            if (backMap == null)
-            {
-                ctx.Logger.LogWarning("[RecordAllDragCoordinates] Cannot find Transform: AllBuild/BackMap");
-                return "失败：找不到BackMap";
-            }
-
-            // 2) BackMap 下一层只有一个对象（如 25(Clone)）
-            var cloneRoot = backMap.GetChild(0);
-
-            // 3) 进入 BuildShow（名字固定）
-            var buildShow = cloneRoot.Find("BuildShow");
-            if (buildShow == null)
-            {
-                ctx.Logger.LogWarning($"[RecordAllDragCoordinates] Cannot find Transform: {cloneRoot.name}/BuildShow");
-                return "失败：找不到BuildShow";
-            }
-
-            // 4) 收集所有记录
             var records = new List<DragRecord>();
+            var buildCount = Mainload.AllBuilddata.Count;
+            ctx.Print($"{buildCount} buildings found", ConsoleLevel.Info);
 
-            // 遍历BuildShow的所有子对象
-            for (var i = 0; i < buildShow.childCount; i++)
+            for (var buildID = 0; buildID < buildCount; buildID++)
             {
-                var levelA = buildShow.GetChild(i);
-
-                // 获取PerBuildScene组件
-                var perBuildScene = levelA.GetComponent<PerBuildScene>();
-                if (perBuildScene == null)
+                for (var state = 0; state < 4; state++)
                 {
-                    ctx.Logger.LogWarning($"[RecordAllDragCoordinates] Skipping '{levelA.name}' - no PerBuildScene component found.");
-                    continue;
-                }
-
-                // 5) 这一层里面还会套一层名字不定的对象（一定只有一个）
-                var levelB = levelA.GetChild(0);
-
-                // 6) 找到 AllDrag 节点
-                var allDrag = levelB.Find("UI/AllDrag");
-                if (allDrag == null)
-                {
-                    ctx.Logger.LogInfo($"[RecordAllDragCoordinates] Not found AllDrag under: {GetHierarchyPath(levelB)}");
-                    continue;
-                }
-
-                // 7) 记录AllDrag的所有子对象
-                // 解析所有子对象的坐标
-                var coordinates = new List<Vector2Int>();
-                var hasValidCoordinates = false;
-                
-                for (var j = 0; j < allDrag.childCount; j++)
-                {
-                    var child = allDrag.GetChild(j);
-                    if (ParseCoordinate(child.name, out var coord))
+                    var obj = Resources.Load<GameObject>($"allbuild/0/scene/{buildID}/{state}");
+                    if (obj == null)
+                        break;
+                    
+                    var allDrag = obj.transform.Find("UI/AllDrag");
+                    var positions = new List<Vector2Int>();
+                    
+                    for (var i = allDrag.childCount - 1; i >= 0; i--)
                     {
-                        coordinates.Add(coord);
-                        hasValidCoordinates = true;
+                        var child = allDrag.GetChild(i);
+                        if(ParsePosition(child.name, out var pos))
+                            positions.Add(pos);
+                        else
+                            ctx.Logger.LogWarning($"{buildID}/{state}: Invalid position format '{child.name}'");
                     }
-                    else
-                    {
-                        ctx.Logger.LogWarning($"[RecordAllDragCoordinates] Invalid coordinate format '{child.name}' under {GetHierarchyPath(allDrag)}");
-                    }
-                }
 
-                if (!hasValidCoordinates)
-                {
-                    ctx.Logger.LogWarning($"[RecordAllDragCoordinates] No valid coordinates found under {GetHierarchyPath(allDrag)}");
-                    continue;
-                }
-
-                // 8) 找到最小和最大坐标
-                var minCoord = coordinates[0];
-                var maxCoord = coordinates[0];
+                    if (positions.Count == 0)
+                        ctx.Logger.LogWarning($"{buildID}/{state}: No valid positions found");
+                    
+                    var minPos = positions[0];
+                    var maxPos = positions[0];
                 
-                foreach (var coord in coordinates)
-                {
-                    // 最小坐标：A和B分别小于等于其他坐标的A和B
-                    if (coord.x < minCoord.x || (coord.x == minCoord.x && coord.y < minCoord.y))
+                    foreach (var pos in positions)
                     {
-                        minCoord = coord;
+                        if (pos.x < minPos.x || (pos.x == minPos.x && pos.y < minPos.y))
+                            minPos = pos;
+                        if (pos.x > maxPos.x || (pos.x == maxPos.x && pos.y > maxPos.y))
+                            maxPos = pos;
                     }
                     
-                    // 最大坐标：A和B分别大于等于其他坐标的A和B
-                    if (coord.x > maxCoord.x || (coord.x == maxCoord.x && coord.y > maxCoord.y))
+                    var record = new DragRecord
                     {
-                        maxCoord = coord;
-                    }
+                        BuildClassID = buildID,
+                        BuildStateID = state,
+                        MinPositionA = minPos.x,
+                        MinPositionB = minPos.y,
+                        MaxPositionA = maxPos.x,
+                        MaxPositionB = maxPos.y,
+                        TotalCollisions = positions.Count
+                    };
+                    records.Add(record);
                 }
-
-                // 9) 创建记录
-                var record = new DragRecord
-                {
-                    BuildClassID = perBuildScene.buildClassID,
-                    BuildStateID = perBuildScene.buildstateID,
-                    MinCoordA = minCoord.x,
-                    MinCoordB = minCoord.y,
-                    MaxCoordA = maxCoord.x,
-                    MaxCoordB = maxCoord.y,
-                    TotalCoordinates = coordinates.Count
-                };
-                
-                records.Add(record);
             }
 
-            SaveCSVToFile(GenerateCSV(records));
-            // 生成CSV，将CSV保存到文件或返回
-            return $"Succeed";
+            SaveToCSV(records);
+            return "Done, csv saved";
         }
         catch (Exception ex)
         {
-            ctx.Logger.LogError($"[RecordAllDragCoordinates] Error: {ex.Message}");
-            return $"失败：{ex.Message}";
+            ctx.Logger.LogError($"Error: {ex.Message}");
+            return $"Error：{ex.Message}";
         }
     }
 
     /// <summary>
     /// 解析坐标字符串，格式为"A|B"
     /// </summary>
-    private static bool ParseCoordinate(string coordinateStr, out Vector2Int coordinate)
+    private static bool ParsePosition(string positionStr, out Vector2Int position)
     {
-        coordinate = Vector2Int.zero;
+        position = Vector2Int.zero;
         
-        if (string.IsNullOrEmpty(coordinateStr))
+        if (string.IsNullOrEmpty(positionStr))
             return false;
             
-        var parts = coordinateStr.Split('|');
+        var parts = positionStr.Split('|');
         if (parts.Length != 2)
             return false;
-            
-        if (int.TryParse(parts[0].Trim(), out var a) && int.TryParse(parts[1].Trim(), out var b))
-        {
-            coordinate = new Vector2Int(a, b);
-            return true;
-        }
-        
-        return false;
-    }
 
-    /// <summary>
-    /// 生成CSV字符串
-    /// </summary>
-    private static string GenerateCSV(List<DragRecord> records)
-    {
-        var csvBuilder = new StringBuilder();
+        if (!int.TryParse(parts[0].Trim(), out var a) || !int.TryParse(parts[1].Trim(), out var b)) 
+            return false;
         
-        // CSV头部
+        position = new Vector2Int(a, b);
+        return true;
+    }
+    
+    private static void SaveToCSV(List<DragRecord> records)
+    {
+        var fileName = $"AllBuildingCollision{"_v" + Mainload.Vision_now.Substring(2)}.csv";
+        var csvBuilder = new StringBuilder();
         csvBuilder.AppendLine("buildClassID,buildStateID,minA,minB,maxA,maxB,totalCoordinates");
         
         // 数据行
         foreach (var record in records)
         {
             csvBuilder.AppendLine(
-                $"{record.BuildClassID},{record.BuildStateID},{record.MinCoordA},{record.MinCoordB},{record.MaxCoordA},{record.MaxCoordB},{record.TotalCoordinates}");
+                $"{record.BuildClassID},{record.BuildStateID},{record.MinPositionA},{record.MinPositionB},{record.MaxPositionA},{record.MaxPositionB},{record.TotalCollisions}");
         }
         
-        return csvBuilder.ToString();
+        System.IO.File.WriteAllText(fileName, csvBuilder.ToString());
     }
-
-    /// <summary>
-    /// 保存CSV到文件
-    /// </summary>
-    private static void SaveCSVToFile(string csv)
-    {
-        var fileName = $"AllBuildingCollision{"_v" + Mainload.Vision_now.Substring(2)}.csv";
-        System.IO.File.WriteAllText(fileName, csv);
-    }
-
-    /// <summary>
-    /// 获取游戏对象层级路径（辅助函数）
-    /// </summary>
-    private static string GetHierarchyPath(Transform transform)
-    {
-        if (transform == null)
-            return "null";
-            
-        var path = new List<string>();
-        var current = transform;
-        
-        while (current != null)
-        {
-            path.Insert(0, current.name);
-            current = current.parent;
-        }
-        
-        return string.Join("/", path);
-    }
-
-    /// <summary>
-    /// 记录数据结构
-    /// </summary>
+    
     private class DragRecord
     {
-        public string BuildClassID { get; set; }
+        public int BuildClassID { get; set; }
         public int BuildStateID { get; set; }
-        public int MinCoordA { get; set; }
-        public int MinCoordB { get; set; }
-        public int MaxCoordA { get; set; }
-        public int MaxCoordB { get; set; }
-        public int TotalCoordinates { get; set; }
+        public int MinPositionA { get; set; }
+        public int MinPositionB { get; set; }
+        public int MaxPositionA { get; set; }
+        public int MaxPositionB { get; set; }
+        public int TotalCollisions { get; set; }
     }
 }
