@@ -106,7 +106,7 @@ public static class BuildingCommands
     
     private static void SaveToCSV(List<DragRecord> records)
     {
-        var fileName = $"AllBuildingCollision{"_v" + Mainload.Vision_now.Substring(2)}.csv";
+        var fileName = $"Output/AllBuildingCollision{"_v" + Mainload.Vision_now.Substring(2)}.csv";
         var csvBuilder = new StringBuilder();
         csvBuilder.AppendLine("buildClassID,buildStateID,minA,minB,maxA,maxB,totalCoordinates");
         
