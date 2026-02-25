@@ -12,6 +12,9 @@
 
     <ItemGroup>
         <Reference Include="Assembly-CSharp" HintPath="..\.libs\Assembly-CSharp.dll" Private="false"/>
+        <Reference Include="Newtonsoft.Json">
+          <HintPath>..\.libs\Newtonsoft.Json.dll</HintPath>
+        </Reference>
         <Reference Include="YuanAPI" HintPath="..\.libs\YuanAPI.dll" Private="false"/>
     </ItemGroup>
 

@@ -609,5 +609,6 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
         PropCommands.Register();
         DebugCommands.Register();
         BuildingCommands.Register();
+        AllTextExporter.Register();
     }
 }
