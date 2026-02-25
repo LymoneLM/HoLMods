@@ -1,10 +1,10 @@
 {
     "name": "HoLConsole",
-    "version_number": "1.0.0",
+    "version_number": "1.0.1",
     "website_url": "https://github.com/LymoneLM/HoLMods",
     "description": "为游戏添加了控制台，便于调试，支持二次开发。Added a console to the game to facilitate debugging and support secondary development.",
     "dependencies": [
         "BepInEx-BepInExPack-5.4.2304",
-        "LymoneLM-NewtonsoftJson-13.0.4"
+        "LymoneLM-YuanAPI-0.1.2"
     ]
 }
