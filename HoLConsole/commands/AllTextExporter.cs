@@ -19,8 +19,8 @@ public static class AllTextExporter
     {
         ConsoleAPI.RegisterCommand(new CommandDef(
             name: "export-AllText",
-            description: "[调试指令]将游戏内置的 AllText 原版文本导出为符合 Localization 模块格式的嵌套 JSON 文件",
-            usage: "export-AllText [outputPath]",
+            description: "[调试指令]将游戏内置的 AllText 原版文本导出为符合YuanAPI格式的嵌套 JSON 文件",
+            usage: "export-AllText",
             handler: ExportAllTextCommand
         ));
     }
