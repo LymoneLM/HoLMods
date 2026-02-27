@@ -7,12 +7,12 @@
 
     <ItemGroup>
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="UnityEngine.Modules" Version="2020.1.14" PrivateAssets="all" IncludeAssets="compile"/>
     </ItemGroup>
 
     <ItemGroup>
         <Reference Include="Assembly-CSharp" HintPath="..\.libs\Assembly-CSharp.dll" Private="false"/>
-        <Reference Include="Newtonsoft.Json" HintPath="..\.libs\Newtonsoft.Json.dll" Private="false"/>
         <Reference Include="YuanAPI" HintPath="..\.libs\YuanAPI.dll" Private="false"/>
     </ItemGroup>
 
