@@ -18,7 +18,7 @@ public class ConsolePlugin : BaseUnityPlugin, IConsoleHost
 {
     public const string MODNAME = "HoLConsole";
     public const string MODGUID = "cc.lymone.HoL." + MODNAME;
-    public const string VERSION = "1.0.0";
+    public const string VERSION = "1.1.0";
     
     internal new static ManualLogSource Logger = null!;
 

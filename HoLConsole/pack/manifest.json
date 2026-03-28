@@ -1,6 +1,6 @@
 {
     "name": "HoLConsole",
-    "version_number": "1.0.1",
+    "version_number": "1.1.0",
     "website_url": "https://github.com/LymoneLM/HoLMods",
     "description": "为游戏添加了控制台，便于调试，支持二次开发。Added a console to the game to facilitate debugging and support secondary development.",
     "dependencies": [
