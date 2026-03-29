@@ -12,7 +12,7 @@ namespace MainloadTool;
 public class MainloadTool : BaseUnityPlugin{
     public const string MODNAME = "MainloadTool";
     public const string MODGUID = "cc.lymone.HoL." + MODNAME;
-    public const string VERSION = "2.0.0";
+    public const string VERSION = "3.0.0";
 
     internal new static ManualLogSource Logger;
     internal static string GameVersion;
@@ -20,6 +20,7 @@ public class MainloadTool : BaseUnityPlugin{
     internal static ConfigEntry<KeyCode> OpenMenuKey;
     internal static ConfigEntry<string> AutoLoadSaveName;
     internal static ConfigEntry<bool> IsPreventRemoveSave;
+    internal static ConfigEntry<bool> IsPrintCurrentPosition;
 
     private void Awake() {
         Logger = base.Logger;
@@ -28,8 +29,7 @@ public class MainloadTool : BaseUnityPlugin{
         BindConfig();
 
         var harmony = new Harmony(MODGUID);
-        harmony.PatchAll(typeof(PerDangBTPatch));
-        harmony.PatchAll(typeof(StartGameUIPatch));
+        harmony.PatchAll();
         
         Localization.Initialize();
     }
@@ -53,6 +53,10 @@ public class MainloadTool : BaseUnityPlugin{
         IsPreventRemoveSave = Config.Bind("存档工具 Save Tool", "阻止删除存档 Prevent Remove Save",
             true,
             "当加载存档出错时，是否阻止删除存档文件");
+
+        IsPrintCurrentPosition = Config.Bind("调试工具 Debug Tool", "打印坐标 Print Position",
+            false,
+            "在建筑模式时输出当前坐标到日志 世界坐标|逻辑坐标");
     }
     
     #region UI
