@@ -16,8 +16,7 @@ public class BuildPosiGetPatch
         if (++_counter < 9) return;
         _counter = 0;
 
-        var worldPosi =
-            __instance.transform.InverseTransformPoint(Camera.main!.ScreenToWorldPoint(Input.mousePosition));
+        var worldPosi = Camera.main!.ScreenToWorldPoint(Input.mousePosition);
 
         if (_scene == null)
             _scene = __instance.transform.parent.GetComponent<PerBackMapScene>();
