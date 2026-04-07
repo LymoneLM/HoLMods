@@ -1,0 +1,9 @@
+{
+    "name": "MoreTimeSpeed",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/LymoneLM/HoLMods",
+    "description": "自定义原版3x/5x/10x的实际时间倍率，建议配合配置管理器使用。Customize the actual time multiplier of the vanilla game at 3x/5x/10x. It is recommended to use it with a configuration manager.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2304"
+    ]
+}
