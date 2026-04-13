@@ -1,0 +1,9 @@
+{
+    "name": "ConfigurationManager",
+    "version_number": "18.4.1",
+    "website_url": "https://github.com/BepInEx/BepInEx.ConfigurationManager",
+    "description": "按F1打开配置管理器，在游戏内实时编辑模组配置。Press F1 to open the configuration manager and edit mod configurations in real time within the game.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2304"
+    ]
+}
