@@ -11,9 +11,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Assembly-CSharp" HintPath="..\.libs\Assembly-CSharp.dll" Private="false"/>
-        <Reference Include="Assembly-CSharp-firstpass" HintPath="..\.libs\Assembly-CSharp-firstpass.dll" Private="false"/>
-        <Reference Include="UnityEngine.UI" HintPath="..\.libs\UnityEngine.UI.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp" HintPath="..\..\.libs\Assembly-CSharp.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp-firstpass" HintPath="..\..\.libs\Assembly-CSharp-firstpass.dll" Private="false"/>
+        <Reference Include="UnityEngine.UI" HintPath="..\..\.libs\UnityEngine.UI.dll" Private="false"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="src\Patches\" />
     </ItemGroup>
 
 </Project>
