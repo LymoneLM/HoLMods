@@ -62,7 +62,7 @@ If you have any questions, suggestions, or encounter bugs, feel free to join our
 运行一次游戏后生成配置，位于：
 
 ```shell
-BepInEx\config\cc.lymone.HoL.BetterLibrary.cfg
+BepInEx\config\cc.lymone.HoL.MoreResolution.cfg
 ```
 
 修改完保存配置，需要重启游戏生效
@@ -72,7 +72,7 @@ BepInEx\config\cc.lymone.HoL.BetterLibrary.cfg
 The configuration file is generated after running the game once, located at:
 
 ```shell
-BepInEx\config\cc.lymone.HoL.BetterLibrary.cfg
+BepInEx\config\cc.lymone.HoL.MoreResolution.cfg
 ```
 
 Save the changes after modification and restart the game for them to take effect.
