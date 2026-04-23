@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="src\Patches\" />
+      <ProjectReference Include="..\PanelTweakScripts\PanelTweakScripts.csproj" />
     </ItemGroup>
 
 </Project>
