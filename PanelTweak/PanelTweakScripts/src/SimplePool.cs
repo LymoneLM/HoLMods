@@ -34,6 +34,6 @@ public class SimplePool<T> where T : MonoBehaviour
         
     ~SimplePool()
     {
-        Object.Destroy(_poolRoot);
+        Object.Destroy(_poolRoot.gameObject);
     }
 }
