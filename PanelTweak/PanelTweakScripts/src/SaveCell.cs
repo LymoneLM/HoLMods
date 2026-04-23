@@ -5,53 +5,59 @@ using UnityEngine.UI;
 
 namespace PanelTweak;
 
-public class SaveBTEx : MonoBehaviour
+public class SaveCell : MonoBehaviour
 {
-    private Transform _iconRoot;
-        
-    private Text _name;
-    private Text _level;
-    private Text _date;
-    private Text _tip;
+    public Transform iconRoot;
+    public new Text name;
+    public Text level;
+    public Text date;
+    public Text tip;
+    
+    public Button backBT;
+    public Button removeBT;
+    public AudioSource btSfx;
+    
     private bool _haveSave;
     private string _savePath;
         
-    private List<string> _familyData = new List<string>();
-    private List<string> _memberFirst = new List<string>();
-    private List<int> _saveDate = new List<int>();
+    private List<string> _familyData = [];
+    private List<string> _memberFirst = [];
+    private List<int> _saveDate = [];
 
-    protected virtual void Awake()
+    private void Awake()
     {
-        var dataShow = transform.Find("DataShow");
-        _iconRoot = dataShow.Find("IconShow");
-        _name = dataShow.Find("Name").GetComponent<Text>();
-        _level = dataShow.Find("Lv").GetComponent<Text>();
-        _date = dataShow.Find("Time").GetComponent<Text>();
-        _tip = transform.Find("NoDataTip").Find("Tip").GetComponent<Text>();
-            
-        transform.Find("BackBT").GetComponent<Button>().onClick.AddListener(ClickBT);
-        transform.Find("RemoveBT").GetComponent<Button>().onClick.AddListener(RemoveBT);
+        backBT.onClick.AddListener(ClickBT);
+        removeBT.onClick.AddListener(RemoveBT);
+
+        name.font = FontManager.BoldFont;
+        level.font = FontManager.BoldFont;
+        date.font = FontManager.BoldFont;
+        tip.font = FontManager.BoldFont;
     }
 
     private void OnEnable()
     {
+        UpdateSfxVolume();
         UpdateFontSize();
         UpdateShow();
     }
-        
+    
+    private void UpdateSfxVolume()
+        => btSfx.volume = Mainload.SetData[0] / 100f;
+
     private void UpdateFontSize()
     {
         if (Mainload.SetData[4] == 0)
         {
-            _name.fontSize = 36;
-            _level.fontSize = 26;
-            _date.fontSize = 26;
+            name.fontSize = 36;
+            level.fontSize = 26;
+            date.fontSize = 26;
         }
         else
         {
-            _name.fontSize = 34;
-            _level.fontSize = 24;
-            _date.fontSize = 24;
+            name.fontSize = 34;
+            level.fontSize = 24;
+            date.fontSize = 24;
         }
     }
 
@@ -74,19 +80,19 @@ public class SaveBTEx : MonoBehaviour
 
     private void UpdateShow()
     {
-        _tip.text = AllText.Text_UIA[31][Mainload.SetData[4]];
+        tip.text = AllText.Text_UIA[31][Mainload.SetData[4]];
             
         if (_haveSave)
         {
             ShowMemberImage();
             var addressParts = _familyData[0].Split('|');
-            _name.text = AllText.Text_UIA[29][Mainload.SetData[4]]
+            name.text = AllText.Text_UIA[29][Mainload.SetData[4]]
                 .Replace("@", AllText.Text_City[int.Parse(addressParts[0])][Mainload.SetData[4]]
                     .Split('~')[1].Split('|')[int.Parse(addressParts[1])])
                 .Replace("$", _familyData[1]);
-            _level.text = AllText.Text_UIA[28][Mainload.SetData[4]]
+            level.text = AllText.Text_UIA[28][Mainload.SetData[4]]
                 .Replace("@", _familyData[2]);
-            _date.text = AllText.Text_UIA[975][Mainload.SetData[4]]
+            date.text = AllText.Text_UIA[975][Mainload.SetData[4]]
                 .Replace("@", _saveDate[0].ToString())
                 .Replace("$", AllText.Text_Months[_saveDate[1]][Mainload.SetData[4]])
                 .Replace("~", _saveDate[2].ToString());
@@ -104,9 +110,9 @@ public class SaveBTEx : MonoBehaviour
 
     private void ShowMemberImage()
     {
-        var count = _iconRoot.childCount;
+        var count = iconRoot.childCount;
         for (var i = 0; i < count; i++)
-            Destroy(_iconRoot.GetChild(i).gameObject);
+            Destroy(iconRoot.GetChild(i).gameObject);
 
         var genderStr = _memberFirst[5];
         var old = int.Parse(_memberFirst[6]);
@@ -126,7 +132,7 @@ public class SaveBTEx : MonoBehaviour
         var midStageStr = Mathf.Min(stage, 2).ToString();
 
         string[] iconPath =
-        {
+        [
             "AllLooks/Member_B/" + genderStr + "/" + stageStr + "/houfa/" + imageParts[0],
             ((bodyStr == "null")
                 ? ("AllLooks/Member_B/" + genderStr + "/" + midStageStr + "/shen/" + imageParts[1])
@@ -134,11 +140,11 @@ public class SaveBTEx : MonoBehaviour
             "AllLooks/Member_B/" + genderStr + "/" + midStageStr + "/tou/" + imageParts[2],
             "AllLooks/Member_B/" + genderStr + "/" + midStageStr + "/PX/" + _memberFirst[3],
             "AllLooks/Member_B/" + genderStr + "/" + stageStr + "/qianfa/" + imageParts[3]
-        };
+        ];
             
         foreach (var path in iconPath)
         {
-            var obj = Instantiate(Resources.Load<GameObject>(path), _iconRoot);
+            var obj = Instantiate(Resources.Load<GameObject>(path), iconRoot);
             obj.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
             obj.transform.localPosition = new Vector3(0f, 0f, 0f);
         }
