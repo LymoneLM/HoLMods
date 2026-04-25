@@ -33,7 +33,14 @@ public class SelectSavePanel : MonoBehaviour
         _startGameUI = transform.parent.Find("StartGameUI").gameObject;
         _initGameUI = transform.parent.Find("InitGameUI").gameObject;
 
-        _savePool = new SimplePool<SaveCell>(saveCellPrefab);
+        _savePool = new SimplePool<SaveCell>(saveCellPrefab)
+        {
+            OnGet = saveCell =>
+            {
+                saveCell.transform.localPosition = Vector3.zero;
+                saveCell.transform.localScale = Vector3.one;
+            }
+        };
 
         closeBT.onClick.AddListener(CloseBT);
         backBT.onClick.AddListener(CloseBT);
@@ -51,14 +58,17 @@ public class SelectSavePanel : MonoBehaviour
         transform.DOLocalMoveY(0f, 0.3f).SetEase(Ease.OutBack, 1f);
     }
 
+    private void OnDestroy()
+    {
+        _savePool.Dispose();
+    }
+
     private void ReloadSaveList()
     {
         var count = _saveList.Count;
-        for (var i = count; i > 0; --i)
-        {
-            _savePool.Return(_saveList[i - 1]);
-            _saveList.RemoveAt(i - 1);
-        }
+        for (var i = 0; i < count; ++i)
+            _savePool.Return(_saveList[i]);
+        _saveList.Clear();
 
         if (LegacyMode)
         {
@@ -76,10 +86,7 @@ public class SelectSavePanel : MonoBehaviour
 
     private void LoadSaveCell(string savePath)
     {
-        var saveCell = _savePool.Get();
-        saveCell.transform.SetParent(saveCellContent);
-        saveCell.transform.localPosition = Vector3.zero;
-        saveCell.transform.localScale = Vector3.one;
+        var saveCell = _savePool.Get(saveCellContent, false);
         saveCell.SetSave(savePath);
         _saveList.Add(saveCell);
     }
