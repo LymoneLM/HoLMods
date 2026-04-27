@@ -15,13 +15,13 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
 
     private T _value;
     private readonly T _defaultValue;
-    private readonly IValueConstraint<T>? _valueConstraint;
+    private readonly IValueConstraint<T> _valueConstraint;
 
     // 包装句柄
     internal SettingEntryHandle<T> Handle { get; }
 
-    public event Action<ISettingEntry>? Changed;
-    internal event Action<T>? ValueChanged;
+    public event Action<ISettingEntry> Changed;
+    internal event Action<T> ValueChanged;
 
     public object BoxedValue
     {
@@ -34,7 +34,7 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
     public bool IsDefault => EqualityComparer<T>.Default.Equals(_value, _defaultValue);
 
     public SettingEntryImpl(string id, T defaultValue, TextRef displayName, TextRef description,
-        SettingUiType uiType, ISettingConstraint? constraint, IValueConstraint<T>? valueConstraint)
+        SettingUiType uiType, ISettingConstraint constraint, IValueConstraint<T> valueConstraint)
     {
         Id = id;
         _defaultValue = defaultValue;
@@ -73,7 +73,7 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
         error = string.Empty;
         if (value is not T typedValue)
         {
-            error = $"Expected type {typeof(T)}, got {value?.GetType() ?? null}";
+            error = $"Expected type {typeof(T)}, got {value?.GetType()}";
             return false;
         }
 

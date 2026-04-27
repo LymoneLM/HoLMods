@@ -15,10 +15,10 @@ public readonly struct TextRef
 {
     public TextRefKind Kind { get; }
     public string Value { get; }
-    public string? Fallback { get; }
-    public string? Scope { get; }
+    public string Fallback { get; }
+    public string Scope { get; }
 
-    private TextRef(TextRefKind kind, string value, string? fallback, string? scope)
+    private TextRef(TextRefKind kind, string value, string fallback, string scope)
     {
         Kind = kind;
         Value = value ?? throw new ArgumentNullException(nameof(value));
@@ -29,7 +29,7 @@ public readonly struct TextRef
     public static TextRef Literal(string text)
         => new(TextRefKind.Literal, text, null, null);
 
-    public static TextRef Key(string key, string? fallback = null, string? scope = null)
+    public static TextRef Key(string key, string fallback = null, string scope = null)
         => new(TextRefKind.LocalizationKey, key, fallback, scope);
 
     public string Resolve(ITextResolver resolver)

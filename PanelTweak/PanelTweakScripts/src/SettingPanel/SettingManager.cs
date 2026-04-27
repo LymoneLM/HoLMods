@@ -4,8 +4,8 @@ namespace PanelTweak;
 
 public static class SettingManager
 {
-    private static ISettingsSource? _source;
-    private static ITextResolver? _textResolver;
+    private static ISettingsSource _source;
+    private static ITextResolver _textResolver;
 
     internal static bool IsInitialized => _source != null;
 
@@ -19,7 +19,7 @@ public static class SettingManager
         get => _textResolver ?? throw new InvalidOperationException("TextResolver is not initialized.");
     }
 
-    public static event Action? LanguageChanged;
+    public static event Action LanguageChanged;
 
     internal static void Initialize(ISettingsSource source, ITextResolver resolver)
     {

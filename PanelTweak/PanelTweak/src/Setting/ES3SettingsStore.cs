@@ -13,16 +13,16 @@ public interface ISettingsStore
 
 public sealed class ES3SettingsStore : ISettingsStore
 {
-    private const string FilePath = "FW/Settings.es3";
-    private const string Key = "settings_data";
+    private const string _filePath = "FW/Settings.es3";
+    private const string _key = "settings_data";
     private bool _dirty;
 
     public void Load(SettingsRegistry registry)
     {
-        if (!ES3.FileExists(FilePath))
+        if (!ES3.FileExists(_filePath))
             return;
 
-        var dict = ES3.Load<Dictionary<string, string>>(Key, FilePath, new Dictionary<string, string>());
+        var dict = ES3.Load(_key, _filePath, new Dictionary<string, string>());
         foreach (var entry in registry.GetAllEntries())
         {
             if (dict.TryGetValue(entry.Id, out var stringValue))
@@ -44,7 +44,7 @@ public sealed class ES3SettingsStore : ISettingsStore
         foreach (var e in registry.GetAllEntries()) currentIds.Add(e.Id);
         foreach (var kv in dict)
             if (!currentIds.Contains(kv.Key))
-                cacheUnknownEntry(kv.Key, kv.Value);
+                CacheUnknownEntry(kv.Key, kv.Value);
 
         _dirty = false;
     }
@@ -57,25 +57,25 @@ public sealed class ES3SettingsStore : ISettingsStore
             dict[entry.Id] = StringifyValue(entry.BoxedValue);
         }
         // 附加未知条目
-        foreach (var unknown in unknownEntries)
+        foreach (var unknown in _unknownEntries)
             dict[unknown.Key] = unknown.Value;
 
-        ES3.Save<Dictionary<string, string>>(Key, dict, FilePath);
+        ES3.Save<Dictionary<string, string>>(_key, dict, _filePath);
         _dirty = false;
     }
 
     public void MarkDirty() => _dirty = true;
     public bool IsDirty => _dirty;
 
-    private readonly Dictionary<string, string> unknownEntries = new();
+    private readonly Dictionary<string, string> _unknownEntries = new();
 
-    private void cacheUnknownEntry(string id, string value)
+    private void CacheUnknownEntry(string id, string value)
     {
-        if (!unknownEntries.ContainsKey(id))
-            unknownEntries[id] = value;
+        if (!_unknownEntries.ContainsKey(id))
+            _unknownEntries[id] = value;
     }
 
-    private static string StringifyValue(object? value)
+    private static string StringifyValue(object value)
     {
         if (value == null) return "";
         return value is IConvertible ? Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) : value.ToString()!;

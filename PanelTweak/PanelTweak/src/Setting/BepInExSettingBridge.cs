@@ -13,12 +13,12 @@ public static class BepInExSettingBridge
     /// </summary>
     public static SettingEntryHandle<T> RegisterConfigEntry<T>(
         this SettingsRegistry registry, string ownerId, ConfigEntry<T> configEntry,
-        string? tabId = null, string? groupId = null,
+        string tabId = null, string groupId = null,
         TextRef? displayName = null, TextRef? description = null) where T : IEquatable<T>
     {
         // 构造适当的约束和 UI 类型
-        ISettingConstraint? constraint = null;
-        IValueConstraint<T>? valueConstraint = null;
+        ISettingConstraint constraint = null;
+        IValueConstraint<T> valueConstraint = null;
         var uiType = SettingUiType.Toggle; // 默认
 
         if (configEntry.Description.AcceptableValues is AcceptableValueRange<float> floatRange)

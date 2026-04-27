@@ -21,9 +21,9 @@ public sealed class SettingsRegistry : ISettingsSource
     public const string ModsTabId = "mods";
     public const string ControlsTabId = "controls";
 
-    public ISettingsStore? Store { get; set; }
+    public ISettingsStore Store { get; set; }
 
-    public event Action<ISettingEntry>? OnEntryChanged;
+    public event Action<ISettingEntry> OnEntryChanged;
 
     internal SettingsRegistry()
     {
@@ -36,7 +36,7 @@ public sealed class SettingsRegistry : ISettingsSource
     public IReadOnlyList<ISettingTab> Tabs => _tabList.AsReadOnly();
     public IReadOnlyList<ISettingGroup> AllGroups => _groupList.AsReadOnly();
     public IReadOnlyList<ISettingEntry> GetAllSettings() => _entryList.AsReadOnly();
-    public ISettingEntry? GetSetting(string id) => _entries.TryGetValue(id, out var e) ? e : null;
+    public ISettingEntry GetSetting(string id) => _entries.TryGetValue(id, out var e) ? e : null;
 
     // ---------- 注册 Tab / Group（支持显式注册） ----------
     public void RegisterTab(string tabId, TextRef displayName)
@@ -89,7 +89,7 @@ public sealed class SettingsRegistry : ISettingsSource
     // ---------- 公开注册方法（供模组通过 Settings 门面调用） ----------
     internal SettingEntryHandle<bool> RegisterBool(
         string ownerId, string key, bool defaultValue, TextRef? displayName = null,
-        TextRef? description = null, string? tabId = null, string? groupId = null)
+        TextRef? description = null, string tabId = null, string groupId = null)
     {
         return Register(ownerId, key, defaultValue, displayName, description,
             tabId, groupId, SettingUiType.Toggle, constraint: null, null);
@@ -97,7 +97,7 @@ public sealed class SettingsRegistry : ISettingsSource
 
     internal SettingEntryHandle<float> RegisterFloat(
         string ownerId, string key, float defaultValue, TextRef? displayName = null,
-        TextRef? description = null, string? tabId = null, string? groupId = null,
+        TextRef? description = null, string tabId = null, string groupId = null,
         float min = float.MinValue, float max = float.MaxValue, float step = 0f)
     {
         var range = new RangeConstraint(min, max, step);

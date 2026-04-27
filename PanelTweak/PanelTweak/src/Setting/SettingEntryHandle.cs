@@ -21,7 +21,7 @@ public sealed class SettingEntryHandle<T>
     /// <summary>
     /// 值发生变化时触发（传入新值）。
     /// </summary>
-    public event Action<T>? ValueChanged;
+    public event Action<T> ValueChanged;
 
     internal void FireValueChanged(T newValue) => ValueChanged?.Invoke(newValue);
 }
