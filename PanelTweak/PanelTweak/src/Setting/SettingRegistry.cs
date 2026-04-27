@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
-public sealed class SettingsRegistry : ISettingsSource
+public sealed class SettingRegistry : ISettingsSource
 {
     private readonly Dictionary<string, SettingTabImpl> _tabs = new();
     private readonly Dictionary<string, SettingGroupImpl> _groups = new();
@@ -15,19 +15,14 @@ public sealed class SettingsRegistry : ISettingsSource
     private readonly List<SettingGroupImpl> _groupList = new();
     private readonly List<ISettingEntry> _entryList = new();
 
-    private bool _sealed;
-
     // 默认 Tab ID
     public const string ModsTabId = "mods";
     public const string ControlsTabId = "controls";
 
     public ISettingsStore Store { get; set; }
 
-    public event Action<ISettingEntry> OnEntryChanged;
-
-    internal SettingsRegistry()
+    internal SettingRegistry()
     {
-        // 自动创建默认 Tab
         RegisterTabInternal(ModsTabId, TextRef.Key("settings.tab.mods", "Mod Settings"));
         RegisterTabInternal(ControlsTabId, TextRef.Key("settings.tab.controls", "Controls"));
     }
@@ -77,27 +72,21 @@ public sealed class SettingsRegistry : ISettingsSource
             throw new InvalidOperationException($"Duplicate setting id: {entry.Id}");
         _entries[entry.Id] = entry;
         _entryList.Add(entry);
-        entry.Changed += OnSettingChanged;
     }
-
-    private void OnSettingChanged(ISettingEntry entry)
-    {
-        OnEntryChanged?.Invoke(entry);
-        Store?.MarkDirty();
-    }
-
-    // ---------- 公开注册方法（供模组通过 Settings 门面调用） ----------
+    
     internal SettingEntryHandle<bool> RegisterBool(
-        string ownerId, string key, bool defaultValue, TextRef? displayName = null,
-        TextRef? description = null, string tabId = null, string groupId = null)
+        string ownerId, string key, bool defaultValue,
+        TextRef? displayName = null, TextRef? description = null,
+        string tabId = null, string groupId = null)
     {
         return Register(ownerId, key, defaultValue, displayName, description,
             tabId, groupId, SettingUiType.Toggle, constraint: null, null);
     }
 
     internal SettingEntryHandle<float> RegisterFloat(
-        string ownerId, string key, float defaultValue, TextRef? displayName = null,
-        TextRef? description = null, string tabId = null, string groupId = null,
+        string ownerId, string key, float defaultValue,
+        TextRef? displayName = null, TextRef? description = null,
+        string tabId = null, string groupId = null,
         float min = float.MinValue, float max = float.MaxValue, float step = 0f)
     {
         var range = new RangeConstraint(min, max, step);
@@ -107,8 +96,9 @@ public sealed class SettingsRegistry : ISettingsSource
     }
 
     internal SettingEntryHandle<int> RegisterInt(
-        string ownerId, string key, int defaultValue, TextRef? displayName = null,
-        TextRef? description = null, string? tabId = null, string? groupId = null,
+        string ownerId, string key, int defaultValue,
+        TextRef? displayName = null, TextRef? description = null,
+        string tabId = null, string groupId = null,
         int min = int.MinValue, int max = int.MaxValue, int step = 1)
     {
         var range = new RangeConstraint(min, max, step);
@@ -117,9 +107,10 @@ public sealed class SettingsRegistry : ISettingsSource
             tabId, groupId, SettingUiType.Slider, range, valueConstraint);
     }
 
-    internal SettingEntryHandle<T> RegisterEnum<T>(string ownerId, string key, T defaultValue,
+    internal SettingEntryHandle<T> RegisterEnum<T>(
+        string ownerId, string key, T defaultValue,
         TextRef? displayName = null, TextRef? description = null,
-        string? tabId = null, string? groupId = null) where T : Enum
+        string tabId = null, string groupId = null) where T : Enum
     {
         var options = Enum.GetValues(typeof(T)).Cast<T>()
             .Select(v => new SettingOption(v, v.ToString())).ToList();
@@ -129,18 +120,21 @@ public sealed class SettingsRegistry : ISettingsSource
             tabId, groupId, SettingUiType.Dropdown, constraint, valueConstraint);
     }
 
-    internal SettingEntryHandle<KeyCode> RegisterKeybind(string ownerId, string key, KeyCode defaultValue,
+    internal SettingEntryHandle<KeyCode> RegisterKeybind(
+        string ownerId, string key, KeyCode defaultValue,
         TextRef? displayName = null, TextRef? description = null,
-        string? tabId = null, string? groupId = null)
+        string tabId = null, string groupId = null)
     {
         return Register(ownerId, key, defaultValue, displayName, description,
             tabId ?? ControlsTabId, groupId, SettingUiType.Keybind, null, null);
     }
 
     // 核心泛型注册方法
-    private SettingEntryHandle<T> Register<T>(string ownerId, string key, T defaultValue,
-        TextRef? displayName, TextRef? description, string? tabId, string? groupId,
-        SettingUiType uiType, ISettingConstraint? constraint, IValueConstraint<T>? valueConstraint)
+    private SettingEntryHandle<T> Register<T>(
+        string ownerId, string key, T defaultValue,
+        TextRef? displayName, TextRef? description,
+        string tabId, string groupId,
+        SettingUiType uiType, ISettingConstraint constraint, IValueConstraint<T> valueConstraint)
     {
         EnsureNotSealed();
         if (string.IsNullOrEmpty(ownerId))
@@ -167,29 +161,27 @@ public sealed class SettingsRegistry : ISettingsSource
         if (!_groups.ContainsKey(groupId))
             RegisterGroupInternal(groupId, groupId);
 
-        var dispName = displayName ?? key;
-        var desc = description ?? "";
-
-        var impl = new SettingEntryImpl<T>(id, defaultValue, dispName, desc, uiType, constraint, valueConstraint);
+        var impl = new SettingEntryImpl<T>(
+            id, defaultValue,
+            displayName ?? key, description ?? "",
+            uiType, constraint, valueConstraint);
         Register(impl);
         return impl.Handle;
     }
 
     // ---------- 注册状态控制 ----------
+    internal bool IsSealed { get; private set; }
+    
     internal void Seal()
     {
-        _sealed = true;
-        // 可以在这里持久化加载
+        IsSealed = true;
+        // TODO: 持久化数据引入逻辑
         Store?.Load(this);
     }
 
-    internal void Save() => Store?.Save(this);
-
-    internal bool IsSealed => _sealed;
-
     private void EnsureNotSealed()
     {
-        if (_sealed)
+        if (IsSealed)
             throw new InvalidOperationException("Settings registry is sealed. Cannot register new entries after Start.");
     }
 
@@ -197,23 +189,15 @@ public sealed class SettingsRegistry : ISettingsSource
     internal IEnumerable<ISettingEntry> GetAllEntries() => _entryList;
 
     // 内部 Tab/Group 实现
-    private sealed class SettingTabImpl : ISettingTab
+    private sealed class SettingTabImpl(string id, TextRef displayName) : ISettingTab
     {
-        public string Id { get; }
-        public TextRef DisplayName { get; }
-        public SettingTabImpl(string id, TextRef displayName)
-        {
-            Id = id; DisplayName = displayName;
-        }
+        public string Id { get; } = id;
+        public TextRef DisplayName { get; } = displayName;
     }
 
-    private sealed class SettingGroupImpl : ISettingGroup
+    private sealed class SettingGroupImpl(string id, TextRef displayName) : ISettingGroup
     {
-        public string Id { get; }
-        public TextRef DisplayName { get; }
-        public SettingGroupImpl(string id, TextRef displayName)
-        {
-            Id = id; DisplayName = displayName;
-        }
+        public string Id { get; } = id;
+        public TextRef DisplayName { get; } = displayName;
     }
 }

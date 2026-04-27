@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 public interface ISettingsStore
 {
-    void Load(SettingsRegistry registry);
-    void Save(SettingsRegistry registry);
+    void Load(SettingRegistry registry);
+    void Save(SettingRegistry registry);
     void MarkDirty();
 }
 
@@ -17,7 +17,7 @@ public sealed class ES3SettingsStore : ISettingsStore
     private const string _key = "settings_data";
     private bool _dirty;
 
-    public void Load(SettingsRegistry registry)
+    public void Load(SettingRegistry registry)
     {
         if (!ES3.FileExists(_filePath))
             return;
@@ -49,7 +49,7 @@ public sealed class ES3SettingsStore : ISettingsStore
         _dirty = false;
     }
 
-    public void Save(SettingsRegistry registry)
+    public void Save(SettingRegistry registry)
     {
         var dict = new Dictionary<string, string>();
         foreach (var entry in registry.GetAllEntries())

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 internal sealed class SettingEntryImpl<T> : ISettingEntry
 {

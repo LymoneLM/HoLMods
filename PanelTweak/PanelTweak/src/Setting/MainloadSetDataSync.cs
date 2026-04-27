@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 /// <summary>
 /// 负责在设置系统和 Mainload.SetData 数组之间同步值。
@@ -49,7 +49,7 @@ internal static class MainloadSetDataSync
     }
 
     // 从 SetData 拉取并更新设置（用于存档加载）
-    public static void PullFromSetData(SettingsRegistry registry)
+    public static void PullFromSetData(SettingRegistry registry)
     {
         if (_isSyncing || _indexToId == null) return;
         _isSyncing = true;

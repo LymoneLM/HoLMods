@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 public static class BepInExSettingBridge
 {
@@ -12,7 +12,7 @@ public static class BepInExSettingBridge
     /// 并保持双向同步。
     /// </summary>
     public static SettingEntryHandle<T> RegisterConfigEntry<T>(
-        this SettingsRegistry registry, string ownerId, ConfigEntry<T> configEntry,
+        this SettingRegistry registry, string ownerId, ConfigEntry<T> configEntry,
         string tabId = null, string groupId = null,
         TextRef? displayName = null, TextRef? description = null) where T : IEquatable<T>
     {

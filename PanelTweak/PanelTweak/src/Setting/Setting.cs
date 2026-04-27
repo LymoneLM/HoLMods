@@ -2,31 +2,24 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 public static class Setting
 {
-    private static SettingsRegistry _registry;
-
-    internal static void Initialize(SettingsRegistry registry)
+    internal static void Initialize()
     {
-        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        Registry = new SettingRegistry();
     }
 
-    private static SettingsRegistry Registry
+    private static SettingRegistry Registry
     {
-        get
-        {
-            if (_registry == null)
-                throw new InvalidOperationException("Settings system not initialized. Call Settings.Initialize(registry) first.");
-            return _registry;
-        }
+        get => field ?? 
+               throw new InvalidOperationException("Settings system not initialized. Call Settings.Initialize() first.");
+        set;
     }
-
-    // 为了方便，提供 For 方法返回 Builder
-    public static SettingsBuilder For(string ownerId) => new(Registry, ownerId);
-
-    // 快捷注册方法（直接传参）
+    
+    public static SettingBuilder For(string ownerId) => new(Registry, ownerId);
+    
     public static SettingEntryHandle<bool> RegisterBool(string ownerId, string key, bool defaultValue,
         string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null)
         => Registry.RegisterBool(ownerId, key, defaultValue, displayName, description, tabId, groupId);
@@ -48,22 +41,21 @@ public static class Setting
     public static SettingEntryHandle<KeyCode> RegisterKeybind(string ownerId, string key, KeyCode defaultValue,
         string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null)
         => Registry.RegisterKeybind(ownerId, key, defaultValue, displayName, description, tabId, groupId);
-
-    // 批量注册便捷类
-    public class SettingsBuilder
+    
+    public class SettingBuilder
     {
-        private readonly SettingsRegistry _reg;
+        private readonly SettingRegistry _reg;
         private readonly string _ownerId;
         private string _tabId = null!;
         private string _groupId = null!;
 
-        internal SettingsBuilder(SettingsRegistry reg, string ownerId)
+        internal SettingBuilder(SettingRegistry reg, string ownerId)
         {
             _reg = reg;
             _ownerId = ownerId;
         }
 
-        public SettingsBuilder Tab(string tabId, TextRef? displayName = null)
+        public SettingBuilder Tab(string tabId, TextRef? displayName = null)
         {
             if (_reg.Tabs.All(t => t.Id != tabId))
                 _reg.RegisterTab(tabId, displayName ?? tabId);
@@ -71,7 +63,7 @@ public static class Setting
             return this;
         }
 
-        public SettingsBuilder Group(string groupId, TextRef? displayName = null)
+        public SettingBuilder Group(string groupId, TextRef? displayName = null)
         {
             if (_reg.AllGroups.All(g => g.Id != groupId))
                 _reg.RegisterGroup(groupId, displayName ?? groupId);

@@ -1,6 +1,6 @@
 using System;
 
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 /// <summary>
 /// 类型安全的设置项句柄，提供给模组开发者使用。

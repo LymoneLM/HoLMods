@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
+using PanelTweak.Settings;
 
 namespace PanelTweak;
 
@@ -26,5 +27,7 @@ public class PanelTweakPlugin : BaseUnityPlugin
         
         var path = Path.GetDirectoryName(asm.Location);
         AssetBundle = AssetBundle.LoadFromFile(path + "/paneltweak");
+        
+        Setting.Initialize();
     }
 }

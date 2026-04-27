@@ -1,4 +1,4 @@
-namespace PanelTweak.Setting;
+namespace PanelTweak.Settings;
 
 public sealed class DefaultTextResolver : ITextResolver
 {
