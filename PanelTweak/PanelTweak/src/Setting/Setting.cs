@@ -66,7 +66,7 @@ public static class Setting
         public SettingsBuilder Tab(string tabId, TextRef? displayName = null)
         {
             if (_reg.Tabs.All(t => t.Id != tabId))
-                _reg.RegisterTab(tabId, displayName ?? TextRef.Literal(tabId));
+                _reg.RegisterTab(tabId, displayName ?? tabId);
             _tabId = tabId;
             return this;
         }
@@ -74,7 +74,7 @@ public static class Setting
         public SettingsBuilder Group(string groupId, TextRef? displayName = null)
         {
             if (_reg.AllGroups.All(g => g.Id != groupId))
-                _reg.RegisterGroup(groupId, displayName ?? TextRef.Literal(groupId));
+                _reg.RegisterGroup(groupId, displayName ?? groupId);
             _groupId = groupId;
             return this;
         }

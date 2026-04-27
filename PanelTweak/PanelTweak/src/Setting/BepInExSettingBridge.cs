@@ -36,7 +36,7 @@ public static class BepInExSettingBridge
         else if (configEntry.Description.AcceptableValues is AcceptableValueList<T> list)
         {
             var options = list.AcceptableValues
-                .Select(v => new SettingOption(v!, TextRef.Literal(v!.ToString())))
+                .Select(v => new SettingOption(v!, v!.ToString()))
                 .ToList();
             constraint = new OptionsConstraint(options);
             valueConstraint = new OptionsValueConstraint<T>(list.AcceptableValues);
@@ -50,8 +50,8 @@ public static class BepInExSettingBridge
             else uiType = SettingUiType.Toggle; // fallback
         }
 
-        var dispName = displayName ?? TextRef.Literal(configEntry.Definition.Key);
-        var desc = description ?? TextRef.Literal(configEntry.Description.Description ?? "");
+        var dispName = displayName ?? configEntry.Definition.Key;
+        var desc = description ?? configEntry.Description.Description ?? "";
 
         var id = $"{ownerId}.{configEntry.Definition.Section}.{configEntry.Definition.Key}";
 

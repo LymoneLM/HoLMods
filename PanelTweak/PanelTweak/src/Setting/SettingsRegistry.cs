@@ -122,7 +122,7 @@ public sealed class SettingsRegistry : ISettingsSource
         string? tabId = null, string? groupId = null) where T : Enum
     {
         var options = Enum.GetValues(typeof(T)).Cast<T>()
-            .Select(v => new SettingOption(v, TextRef.Literal(v.ToString()))).ToList();
+            .Select(v => new SettingOption(v, v.ToString())).ToList();
         var constraint = new OptionsConstraint(options);
         var valueConstraint = new OptionsValueConstraint<T>(options.Select(o => (T)o.Value));
         return Register(ownerId, key, defaultValue, displayName, description,
@@ -158,17 +158,17 @@ public sealed class SettingsRegistry : ISettingsSource
         else
         {
             if (!_tabs.ContainsKey(tabId))
-                RegisterTabInternal(tabId, TextRef.Literal(tabId)); // 如果未注册则自动创建，降级 display name
+                RegisterTabInternal(tabId, tabId); // 如果未注册则自动创建，降级 display name
         }
 
         // 自动 Group
         if (string.IsNullOrEmpty(groupId))
             groupId = "general";
         if (!_groups.ContainsKey(groupId))
-            RegisterGroupInternal(groupId, TextRef.Literal(groupId));
+            RegisterGroupInternal(groupId, groupId);
 
-        var dispName = displayName ?? TextRef.Literal(key);
-        var desc = description ?? TextRef.Literal("");
+        var dispName = displayName ?? key;
+        var desc = description ?? "";
 
         var impl = new SettingEntryImpl<T>(id, defaultValue, dispName, desc, uiType, constraint, valueConstraint);
         Register(impl);
