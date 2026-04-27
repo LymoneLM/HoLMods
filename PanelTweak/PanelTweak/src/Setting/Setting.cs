@@ -1,36 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BepInEx.Configuration;
 
 namespace PanelTweak.Settings;
-
-public interface IHint { }
-
-public class RangeHint<T> : IHint
-{
-    public T Min { get; }
-    public T Max { get; }
-    public T Step { get; }
-
-    public RangeHint(T min, T max, T step = default)
-    {
-        Min = min;
-        Max = max;
-        Step = step;
-    }
-}
-
-public class OptionsHint<T> : IHint
-{
-    public IReadOnlyList<T> Values { get; }
-
-    public OptionsHint(IReadOnlyList<T> values)
-    {
-        Values = values ?? throw new ArgumentNullException(nameof(values));
-        if (values.Count == 0)
-            throw new ArgumentException("Options cannot be empty", nameof(values));
-    }
-}
 
 public static class Setting
 {
@@ -39,34 +12,34 @@ public static class Setting
         Registry = new SettingRegistry();
     }
 
-    private static SettingRegistry Registry
+    internal static SettingRegistry Registry
     {
         get => field ??
-               throw new InvalidOperationException("Settings system not initialized. Call Settings.Initialize() first.");
+               throw new InvalidOperationException("Settings system not initialized.");
         set;
     }
 
-    public static SettingBuilder For(string ownerId) => new(Registry, ownerId);
+    public static SettingBuilder For(string @namespace) => new(Registry, @namespace);
 
-    public static SettingEntryHandle<T> Register<T>(
-        string ownerId, string key, T defaultValue,
+    public static SettingEntry<T> Register<T>(
+        string @namespace, string key, T defaultValue,
         IHint hint = null,
         string tabId = null, string groupId = null,
         TextRef? displayName = null, TextRef? description = null)
-        => Registry.Register(ownerId, key, defaultValue, hint,
+        => Registry.Register(@namespace, key, defaultValue, hint,
             tabId, groupId, displayName, description);
 
     public class SettingBuilder
     {
         private readonly SettingRegistry _reg;
-        private readonly string _ownerId;
+        private readonly string _namespace;
         private string _tabId = null!;
         private string _groupId = null!;
 
-        internal SettingBuilder(SettingRegistry reg, string ownerId)
+        internal SettingBuilder(SettingRegistry reg, string @namespace)
         {
             _reg = reg;
-            _ownerId = ownerId;
+            _namespace = @namespace;
         }
 
         public SettingBuilder Tab(string tabId, TextRef? displayName = null)
@@ -85,11 +58,49 @@ public static class Setting
             return this;
         }
 
-        public SettingEntryHandle<T> Add<T>(
+        public SettingEntry<T> Add<T>(
             string key, T defaultValue,
             IHint hint = null,
             TextRef? displayName = null, TextRef? description = null)
-            => _reg.Register(_ownerId, key, defaultValue, hint,
+            => _reg.Register(_namespace, key, defaultValue, hint,
                 _tabId, _groupId, displayName, description);
+    }
+    
+    /// <summary>
+    /// 将一个 BepInEx ConfigEntry 注册为游戏设置系统内的设置项，
+    /// 并保持双向同步。
+    /// </summary>
+    public static SettingEntry<T> RegisterConfigEntry<T>(
+        string @namespace, ConfigEntry<T> configEntry,
+        string tabId = null, string groupId = null,
+        TextRef? displayName = null, TextRef? description = null) where T : IEquatable<T>
+    {
+        IHint hint = configEntry.Description.AcceptableValues switch
+        {
+            AcceptableValueRange<float> floatRange => new RangeHint<float>(floatRange.MinValue, floatRange.MaxValue),
+            AcceptableValueRange<int> intRange => new RangeHint<int>(intRange.MinValue, intRange.MaxValue),
+            AcceptableValueList<T> list => new OptionsHint<T>(list.AcceptableValues!),
+            _ => null
+        };
+
+        var entry = Setting.Registry.Register(
+            @namespace, $"{configEntry.Definition.Section}.{configEntry.Definition.Key}", 
+            configEntry.Value, hint, tabId, groupId, 
+            displayName ?? configEntry.Definition.Key, 
+            description ?? configEntry.Description.Description ?? "");
+
+        configEntry.SettingChanged += (_, _) =>
+        {
+            if (!EqualityComparer<T>.Default.Equals(entry.Value, configEntry.Value))
+                entry.Value = configEntry.Value;
+        };
+        
+        entry.ValueChanged += newVal =>
+        {
+            if (!EqualityComparer<T>.Default.Equals(configEntry.Value, newVal))
+                configEntry.Value = newVal;
+        };
+
+        return entry;
     }
 }

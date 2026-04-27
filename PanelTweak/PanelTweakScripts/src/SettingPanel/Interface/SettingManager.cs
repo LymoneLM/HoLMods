@@ -14,7 +14,7 @@ public static class SettingManager
     {
         get => field ?? throw new InvalidOperationException("SettingManager is not initialized.");
         set;
-    }
+    } = new DefaultTextResolver();
     
     internal static bool IsInitialized => Source != null;
 
@@ -29,5 +29,15 @@ public static class SettingManager
     internal static void NotifyLanguageChanged()
     {
         LanguageChanged?.Invoke();
+    }
+}
+
+public sealed class DefaultTextResolver : ITextResolver
+{
+    public string Resolve(TextRef text)
+    {
+        if (text.LocalizationKey != null)
+            return text.Literal ?? text.LocalizationKey;
+        return text.Literal ?? "";
     }
 }

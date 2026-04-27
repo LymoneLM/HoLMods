@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PanelTweak.Settings;
 
-internal sealed class SettingEntryImpl<T> : ISettingEntry
+public sealed class SettingEntry<T> : ISettingEntry
 {
     public string Id { get; }
     public TextRef DisplayName { get; }
@@ -15,10 +15,7 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
     private T _value;
     private readonly T _defaultValue;
 
-    internal SettingEntryHandle<T> Handle { get; }
-
-    public event Action<ISettingEntry> Changed;
-    internal event Action<T> ValueChanged;
+    public event Action<T> ValueChanged;
 
     public object BoxedValue
     {
@@ -30,7 +27,7 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
 
     public bool IsDefault => EqualityComparer<T>.Default.Equals(_value, _defaultValue);
 
-    public SettingEntryImpl(string id, T defaultValue, TextRef displayName, TextRef description,
+    internal SettingEntry(string id, T defaultValue, TextRef displayName, TextRef description,
         SettingUiType uiType, ISettingConstraint constraint)
     {
         Id = id;
@@ -40,7 +37,6 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
         Description = description;
         UiType = uiType;
         Constraint = constraint;
-        Handle = new SettingEntryHandle<T>(this);
     }
 
     public void ResetToDefault()
@@ -59,8 +55,6 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
 
             _value = clamped;
             ValueChanged?.Invoke(_value);
-            Changed?.Invoke(this);
-            Handle.FireValueChanged(_value);
         }
     }
 
@@ -76,6 +70,16 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
         Value = typedValue;
         return true;
     }
+}
 
-    public override string ToString() => $"[{Id}] = {_value}";
+internal sealed class SettingTab(string id, TextRef displayName) : ISettingTab
+{
+    public string Id { get; } = id;
+    public TextRef DisplayName { get; } = displayName;
+}
+
+internal sealed class SettingGroup(string id, TextRef displayName) : ISettingGroup
+{
+    public string Id { get; } = id;
+    public TextRef DisplayName { get; } = displayName;
 }

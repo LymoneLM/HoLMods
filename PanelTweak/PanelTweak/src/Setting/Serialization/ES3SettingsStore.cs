@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace PanelTweak.Settings;
 
-public interface ISettingsStore
+internal interface ISettingsStore
 {
     void Load(SettingRegistry registry);
     void Save(SettingRegistry registry);
     void MarkDirty();
 }
 
-public sealed class ES3SettingsStore : ISettingsStore
+internal sealed class ES3SettingsStore : ISettingsStore
 {
     private const string _filePath = "FW/Settings.es3";
     private const string _key = "settings_data";

@@ -1,21 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace PanelTweak.Settings;
 
-public sealed class SettingRegistry : ISettingsSource
+internal sealed class SettingRegistry : ISettingsSource
 {
-    private readonly Dictionary<string, SettingTabImpl> _tabs = new();
-    private readonly Dictionary<string, SettingGroupImpl> _groups = new();
+    private readonly Dictionary<string, SettingTab> _tabs = new();
+    private readonly Dictionary<string, SettingGroup> _groups = new();
     private readonly Dictionary<string, ISettingEntry> _entries = new();
 
-    private readonly List<SettingTabImpl> _tabList = new();
-    private readonly List<SettingGroupImpl> _groupList = new();
+    private readonly List<SettingTab> _tabList = new();
+    private readonly List<SettingGroup> _groupList = new();
     private readonly List<ISettingEntry> _entryList = new();
 
-    // 默认 Tab ID
     public const string ModsTabId = "mods";
     public const string ControlsTabId = "controls";
 
@@ -23,23 +21,24 @@ public sealed class SettingRegistry : ISettingsSource
 
     internal SettingRegistry()
     {
-        RegisterTabInternal(ModsTabId, TextRef.Key("settings.tab.mods", "Mod Settings"));
-        RegisterTabInternal(ControlsTabId, TextRef.Key("settings.tab.controls", "Controls"));
+        RegisterTab(ModsTabId, TextRef.Key("settings.tab.mods", "Mod Settings"));
+        RegisterTab(ControlsTabId, TextRef.Key("settings.tab.controls", "Controls"));
     }
 
-    // ---------- 公开接口（供面板或其他内部消费者） ----------
     public IReadOnlyList<ISettingTab> Tabs => _tabList.AsReadOnly();
     public IReadOnlyList<ISettingGroup> AllGroups => _groupList.AsReadOnly();
     public IReadOnlyList<ISettingEntry> GetAllSettings() => _entryList.AsReadOnly();
     public ISettingEntry GetSetting(string id) => _entries.TryGetValue(id, out var e) ? e : null;
 
-    // ---------- 注册 Tab / Group（支持显式注册） ----------
     public void RegisterTab(string tabId, TextRef displayName)
     {
         EnsureNotSealed();
         if (_tabs.ContainsKey(tabId))
             throw new InvalidOperationException($"Tab '{tabId}' already registered.");
-        RegisterTabInternal(tabId, displayName);
+        
+        var tab = new SettingTab(tabId, displayName);
+        _tabs[tabId] = tab;
+        _tabList.Add(tab);
     }
 
     public void RegisterGroup(string groupId, TextRef displayName)
@@ -47,25 +46,13 @@ public sealed class SettingRegistry : ISettingsSource
         EnsureNotSealed();
         if (_groups.ContainsKey(groupId))
             throw new InvalidOperationException($"Group '{groupId}' already registered.");
-        RegisterGroupInternal(groupId, displayName);
-    }
-
-    private void RegisterTabInternal(string tabId, TextRef displayName)
-    {
-        var tab = new SettingTabImpl(tabId, displayName);
-        _tabs[tabId] = tab;
-        _tabList.Add(tab);
-    }
-
-    private void RegisterGroupInternal(string groupId, TextRef displayName)
-    {
-        var group = new SettingGroupImpl(groupId, displayName);
+        
+        var group = new SettingGroup(groupId, displayName);
         _groups[groupId] = group;
         _groupList.Add(group);
     }
 
-    // ---------- 注册设置 ----------
-    internal void Register(ISettingEntry entry)
+    public void Register(ISettingEntry entry)
     {
         EnsureNotSealed();
         if (_entries.ContainsKey(entry.Id))
@@ -74,19 +61,19 @@ public sealed class SettingRegistry : ISettingsSource
         _entryList.Add(entry);
     }
 
-    public SettingEntryHandle<T> Register<T>(
-        string ownerId, string key, T defaultValue,
+    public SettingEntry<T> Register<T>(
+        string @namespace, string key, T defaultValue,
         IHint hint = null,
         string tabId = null, string groupId = null,
         TextRef? displayName = null, TextRef? description = null)
     {
         EnsureNotSealed();
-        if (string.IsNullOrEmpty(ownerId))
-            throw new ArgumentNullException(nameof(ownerId));
+        if (string.IsNullOrEmpty(@namespace))
+            throw new ArgumentNullException(nameof(@namespace));
         if (string.IsNullOrEmpty(key))
             throw new ArgumentNullException(nameof(key));
 
-        var id = $"{ownerId}.{key}";
+        var id = $"{@namespace}.{key}";
 
         // 自动推断 UI 类型和约束
         SettingUiType uiType;
@@ -98,9 +85,9 @@ public sealed class SettingRegistry : ISettingsSource
         }
         else if (hint is RangeHint<T> range)
         {
-            float min = Convert.ToSingle(range.Min);
-            float max = Convert.ToSingle(range.Max);
-            float step = Convert.ToSingle(range.Step);
+            var min = Convert.ToSingle(range.Min);
+            var max = Convert.ToSingle(range.Max);
+            var step = Convert.ToSingle(range.Step);
             constraint = new RangeConstraint(min, max, step, typeof(T));
             uiType = SettingUiType.Slider;
         }
@@ -135,24 +122,26 @@ public sealed class SettingRegistry : ISettingsSource
         else
         {
             if (!_tabs.ContainsKey(tabId))
-                RegisterTabInternal(tabId, tabId);
+                RegisterTab(tabId, tabId);
         }
 
         // 自动 Group
         if (string.IsNullOrEmpty(groupId))
             groupId = "general";
         if (!_groups.ContainsKey(groupId))
-            RegisterGroupInternal(groupId, groupId);
+            RegisterGroup(groupId, groupId);
 
-        var impl = new SettingEntryImpl<T>(
+        // TODO: 处理Entry与Tab和Group的绑定
+        var entry = new SettingEntry<T>(
             id, defaultValue,
             displayName ?? key, description ?? "",
             uiType, constraint);
-        Register(impl);
-        return impl.Handle;
+        Register(entry);
+        return entry;
     }
 
-    // ---------- 注册状态控制 ----------
+    #region Registry State Machine
+
     internal bool IsSealed { get; private set; }
     
     internal void Seal()
@@ -168,19 +157,9 @@ public sealed class SettingRegistry : ISettingsSource
             throw new InvalidOperationException("Settings registry is sealed. Cannot register new entries after Start.");
     }
 
-    // ---------- 内部数据对象 ----------
+    #endregion
+    
     internal IEnumerable<ISettingEntry> GetAllEntries() => _entryList;
+    
 
-    // 内部 Tab/Group 实现
-    private sealed class SettingTabImpl(string id, TextRef displayName) : ISettingTab
-    {
-        public string Id { get; } = id;
-        public TextRef DisplayName { get; } = displayName;
-    }
-
-    private sealed class SettingGroupImpl(string id, TextRef displayName) : ISettingGroup
-    {
-        public string Id { get; } = id;
-        public TextRef DisplayName { get; } = displayName;
-    }
 }

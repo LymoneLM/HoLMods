@@ -16,5 +16,16 @@ public interface ISettingEntry
     ISettingConstraint? Constraint { get; }
     void ResetToDefault();
     bool TrySetValue(object value, out string error);
-    event Action<ISettingEntry> Changed;
+}
+
+public interface ISettingGroup
+{
+    string Id { get; }
+    TextRef DisplayName { get; }
+}
+
+public interface ISettingTab
+{
+    string Id { get; }
+    TextRef DisplayName { get; }
 }
