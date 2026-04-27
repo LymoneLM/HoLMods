@@ -17,20 +17,17 @@ public static class BepInExSettingBridge
         TextRef? displayName = null, TextRef? description = null) where T : IEquatable<T>
     {
         // 构造适当的约束和 UI 类型
-        ISettingConstraint constraint = null;
-        IValueConstraint<T> valueConstraint = null;
+        ISettingConstraint? constraint = null;
         var uiType = SettingUiType.Toggle; // 默认
 
         if (configEntry.Description.AcceptableValues is AcceptableValueRange<float> floatRange)
         {
-            constraint = new RangeConstraint(floatRange.MinValue, floatRange.MaxValue);
-            valueConstraint = new RangeValueConstraint(floatRange.MinValue, floatRange.MaxValue, 0) as IValueConstraint<T>;
+            constraint = new RangeConstraint(floatRange.MinValue, floatRange.MaxValue, 0f, typeof(T));
             uiType = SettingUiType.Slider;
         }
         else if (configEntry.Description.AcceptableValues is AcceptableValueRange<int> intRange)
         {
-            constraint = new RangeConstraint(intRange.MinValue, intRange.MaxValue);
-            valueConstraint = new IntRangeValueConstraint(intRange.MinValue, intRange.MaxValue) as IValueConstraint<T>;
+            constraint = new RangeConstraint(intRange.MinValue, intRange.MaxValue, 0f, typeof(T));
             uiType = SettingUiType.Slider;
         }
         else if (configEntry.Description.AcceptableValues is AcceptableValueList<T> list)
@@ -38,8 +35,7 @@ public static class BepInExSettingBridge
             var options = list.AcceptableValues
                 .Select(v => new SettingOption(v!, v!.ToString()))
                 .ToList();
-            constraint = new OptionsConstraint(options);
-            valueConstraint = new OptionsValueConstraint<T>(list.AcceptableValues);
+            constraint = new OptionsConstraint(options, typeof(T));
             uiType = SettingUiType.Dropdown;
         }
         else
@@ -55,10 +51,7 @@ public static class BepInExSettingBridge
 
         var id = $"{ownerId}.{configEntry.Definition.Section}.{configEntry.Definition.Key}";
 
-        // 使用 Registry 核心方法注册
-        // 由于 Register<bool> 等方法受泛型限制，这里需要使用一个内部通用方法
-        // 我们先直接构造 SettingEntryImpl
-        var impl = new SettingEntryImpl<T>(id, configEntry.Value, dispName, desc, uiType, constraint, valueConstraint);
+        var impl = new SettingEntryImpl<T>(id, configEntry.Value, dispName, desc, uiType, constraint);
         registry.Register(impl);
 
         var handle = impl.Handle;

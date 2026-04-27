@@ -80,7 +80,7 @@ public sealed class SettingRegistry : ISettingsSource
         string tabId = null, string groupId = null)
     {
         return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Toggle, constraint: null, null);
+            tabId, groupId, SettingUiType.Toggle, constraint: null);
     }
 
     internal SettingEntryHandle<float> RegisterFloat(
@@ -89,10 +89,9 @@ public sealed class SettingRegistry : ISettingsSource
         string tabId = null, string groupId = null,
         float min = float.MinValue, float max = float.MaxValue, float step = 0f)
     {
-        var range = new RangeConstraint(min, max, step);
-        var valueConstraint = new RangeValueConstraint(min, max, step);
+        var range = new RangeConstraint(min, max, step, typeof(float));
         return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Slider, range, valueConstraint);
+            tabId, groupId, SettingUiType.Slider, range);
     }
 
     internal SettingEntryHandle<int> RegisterInt(
@@ -101,10 +100,9 @@ public sealed class SettingRegistry : ISettingsSource
         string tabId = null, string groupId = null,
         int min = int.MinValue, int max = int.MaxValue, int step = 1)
     {
-        var range = new RangeConstraint(min, max, step);
-        var valueConstraint = new IntRangeValueConstraint(min, max, step);
+        var range = new RangeConstraint(min, max, step, typeof(int));
         return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Slider, range, valueConstraint);
+            tabId, groupId, SettingUiType.Slider, range);
     }
 
     internal SettingEntryHandle<T> RegisterEnum<T>(
@@ -114,10 +112,9 @@ public sealed class SettingRegistry : ISettingsSource
     {
         var options = Enum.GetValues(typeof(T)).Cast<T>()
             .Select(v => new SettingOption(v, v.ToString())).ToList();
-        var constraint = new OptionsConstraint(options);
-        var valueConstraint = new OptionsValueConstraint<T>(options.Select(o => (T)o.Value));
+        var constraint = new OptionsConstraint(options, typeof(T));
         return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Dropdown, constraint, valueConstraint);
+            tabId, groupId, SettingUiType.Dropdown, constraint);
     }
 
     internal SettingEntryHandle<KeyCode> RegisterKeybind(
@@ -126,7 +123,7 @@ public sealed class SettingRegistry : ISettingsSource
         string tabId = null, string groupId = null)
     {
         return Register(ownerId, key, defaultValue, displayName, description,
-            tabId ?? ControlsTabId, groupId, SettingUiType.Keybind, null, null);
+            tabId ?? ControlsTabId, groupId, SettingUiType.Keybind, null);
     }
 
     // 核心泛型注册方法
@@ -134,7 +131,7 @@ public sealed class SettingRegistry : ISettingsSource
         string ownerId, string key, T defaultValue,
         TextRef? displayName, TextRef? description,
         string tabId, string groupId,
-        SettingUiType uiType, ISettingConstraint constraint, IValueConstraint<T> valueConstraint)
+        SettingUiType uiType, ISettingConstraint? constraint)
     {
         EnsureNotSealed();
         if (string.IsNullOrEmpty(ownerId))
@@ -164,7 +161,7 @@ public sealed class SettingRegistry : ISettingsSource
         var impl = new SettingEntryImpl<T>(
             id, defaultValue,
             displayName ?? key, description ?? "",
-            uiType, constraint, valueConstraint);
+            uiType, constraint);
         Register(impl);
         return impl.Handle;
     }

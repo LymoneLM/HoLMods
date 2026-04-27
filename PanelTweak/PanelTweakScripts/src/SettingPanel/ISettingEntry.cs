@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 
 namespace PanelTweak;
@@ -12,7 +13,7 @@ public interface ISettingEntry
     object BoxedDefaultValue { get; }
     bool IsDefault { get; }
     SettingUiType UiType { get; }
-    ISettingConstraint Constraint { get; }
+    ISettingConstraint? Constraint { get; }
     void ResetToDefault();
     bool TrySetValue(object value, out string error);
     event Action<ISettingEntry> Changed;
