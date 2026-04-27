@@ -16,45 +16,32 @@ public static class BepInExSettingBridge
         string tabId = null, string groupId = null,
         TextRef? displayName = null, TextRef? description = null) where T : IEquatable<T>
     {
-        // 构造适当的约束和 UI 类型
-        ISettingConstraint? constraint = null;
-        var uiType = SettingUiType.Toggle; // 默认
+        // 从 BepInEx AcceptableValues 推导约束提示
+        IHint hint = null;
 
         if (configEntry.Description.AcceptableValues is AcceptableValueRange<float> floatRange)
         {
-            constraint = new RangeConstraint(floatRange.MinValue, floatRange.MaxValue, 0f, typeof(T));
-            uiType = SettingUiType.Slider;
+            hint = new RangeHint<float>(floatRange.MinValue, floatRange.MaxValue);
         }
         else if (configEntry.Description.AcceptableValues is AcceptableValueRange<int> intRange)
         {
-            constraint = new RangeConstraint(intRange.MinValue, intRange.MaxValue, 0f, typeof(T));
-            uiType = SettingUiType.Slider;
+            hint = new RangeHint<int>(intRange.MinValue, intRange.MaxValue);
         }
         else if (configEntry.Description.AcceptableValues is AcceptableValueList<T> list)
         {
-            var options = list.AcceptableValues
-                .Select(v => new SettingOption(v!, v!.ToString()))
-                .ToList();
-            constraint = new OptionsConstraint(options, typeof(T));
-            uiType = SettingUiType.Dropdown;
+            hint = new OptionsHint<T>(list.AcceptableValues!);
         }
-        else
-        {
-            if (typeof(T) == typeof(bool)) uiType = SettingUiType.Toggle;
-            else if (typeof(T) == typeof(float) || typeof(T) == typeof(int)) uiType = SettingUiType.Slider;
-            else if (typeof(T).IsEnum) uiType = SettingUiType.Dropdown;
-            else uiType = SettingUiType.Toggle; // fallback
-        }
+        // bool 和 enum 无需 hint，Register<T> 自动推断
 
         var dispName = displayName ?? configEntry.Definition.Key;
         var desc = description ?? configEntry.Description.Description ?? "";
 
-        var id = $"{ownerId}.{configEntry.Definition.Section}.{configEntry.Definition.Key}";
+        // 使用 {Section}.{Key} 作为复合 key，保留三段式 ID：{ownerId}.{Section}.{Key}
+        var compositeKey = $"{configEntry.Definition.Section}.{configEntry.Definition.Key}";
 
-        var impl = new SettingEntryImpl<T>(id, configEntry.Value, dispName, desc, uiType, constraint);
-        registry.Register(impl);
-
-        var handle = impl.Handle;
+        var handle = registry.Register(
+            ownerId, compositeKey, configEntry.Value,
+            hint, tabId, groupId, dispName, desc);
 
         // 双向同步
         configEntry.SettingChanged += (_, _) =>

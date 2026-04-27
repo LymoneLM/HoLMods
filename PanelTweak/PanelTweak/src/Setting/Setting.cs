@@ -1,8 +1,36 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace PanelTweak.Settings;
+
+public interface IHint { }
+
+public class RangeHint<T> : IHint
+{
+    public T Min { get; }
+    public T Max { get; }
+    public T Step { get; }
+
+    public RangeHint(T min, T max, T step = default)
+    {
+        Min = min;
+        Max = max;
+        Step = step;
+    }
+}
+
+public class OptionsHint<T> : IHint
+{
+    public IReadOnlyList<T> Values { get; }
+
+    public OptionsHint(IReadOnlyList<T> values)
+    {
+        Values = values ?? throw new ArgumentNullException(nameof(values));
+        if (values.Count == 0)
+            throw new ArgumentException("Options cannot be empty", nameof(values));
+    }
+}
 
 public static class Setting
 {
@@ -13,35 +41,21 @@ public static class Setting
 
     private static SettingRegistry Registry
     {
-        get => field ?? 
+        get => field ??
                throw new InvalidOperationException("Settings system not initialized. Call Settings.Initialize() first.");
         set;
     }
-    
+
     public static SettingBuilder For(string ownerId) => new(Registry, ownerId);
-    
-    public static SettingEntryHandle<bool> RegisterBool(string ownerId, string key, bool defaultValue,
-        string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null)
-        => Registry.RegisterBool(ownerId, key, defaultValue, displayName, description, tabId, groupId);
 
-    public static SettingEntryHandle<float> RegisterFloat(string ownerId, string key, float defaultValue,
-        float min = float.MinValue, float max = float.MaxValue, float step = 0f,
-        string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null)
-        => Registry.RegisterFloat(ownerId, key, defaultValue, displayName, description, tabId, groupId, min, max, step);
+    public static SettingEntryHandle<T> Register<T>(
+        string ownerId, string key, T defaultValue,
+        IHint hint = null,
+        string tabId = null, string groupId = null,
+        TextRef? displayName = null, TextRef? description = null)
+        => Registry.Register(ownerId, key, defaultValue, hint,
+            tabId, groupId, displayName, description);
 
-    public static SettingEntryHandle<int> RegisterInt(string ownerId, string key, int defaultValue,
-        int min = int.MinValue, int max = int.MaxValue, int step = 1,
-        string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null)
-        => Registry.RegisterInt(ownerId, key, defaultValue, displayName, description, tabId, groupId, min, max, step);
-
-    public static SettingEntryHandle<T> RegisterEnum<T>(string ownerId, string key, T defaultValue,
-        string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null) where T : Enum
-        => Registry.RegisterEnum(ownerId, key, defaultValue, displayName, description, tabId, groupId);
-
-    public static SettingEntryHandle<KeyCode> RegisterKeybind(string ownerId, string key, KeyCode defaultValue,
-        string tabId = null, string groupId = null, TextRef? displayName = null, TextRef? description = null)
-        => Registry.RegisterKeybind(ownerId, key, defaultValue, displayName, description, tabId, groupId);
-    
     public class SettingBuilder
     {
         private readonly SettingRegistry _reg;
@@ -71,19 +85,11 @@ public static class Setting
             return this;
         }
 
-        public SettingEntryHandle<bool> AddBool(string key, bool defaultValue, TextRef? displayName = null, TextRef? description = null)
-            => _reg.RegisterBool(_ownerId, key, defaultValue, displayName, description, _tabId, _groupId);
-
-        public SettingEntryHandle<float> AddFloat(string key, float defaultValue, float min = float.MinValue, float max = float.MaxValue, float step = 0f, TextRef? displayName = null, TextRef? description = null)
-            => _reg.RegisterFloat(_ownerId, key, defaultValue, displayName, description, _tabId, _groupId, min, max, step);
-
-        public SettingEntryHandle<int> AddInt(string key, int defaultValue, int min = int.MinValue, int max = int.MaxValue, int step = 1, TextRef? displayName = null, TextRef? description = null)
-            => _reg.RegisterInt(_ownerId, key, defaultValue, displayName, description, _tabId, _groupId, min, max, step);
-
-        public SettingEntryHandle<T> AddEnum<T>(string key, T defaultValue, TextRef? displayName = null, TextRef? description = null) where T : Enum
-            => _reg.RegisterEnum(_ownerId, key, defaultValue, displayName, description, _tabId, _groupId);
-
-        public SettingEntryHandle<KeyCode> AddKeybind(string key, KeyCode defaultValue, TextRef? displayName = null, TextRef? description = null)
-            => _reg.RegisterKeybind(_ownerId, key, defaultValue, displayName, description, _tabId, _groupId);
+        public SettingEntryHandle<T> Add<T>(
+            string key, T defaultValue,
+            IHint hint = null,
+            TextRef? displayName = null, TextRef? description = null)
+            => _reg.Register(_ownerId, key, defaultValue, hint,
+                _tabId, _groupId, displayName, description);
     }
 }

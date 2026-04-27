@@ -10,7 +10,7 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
     public TextRef Description { get; }
     public Type ValueType => typeof(T);
     public SettingUiType UiType { get; }
-    public ISettingConstraint? Constraint { get; }
+    public ISettingConstraint Constraint { get; }
 
     private T _value;
     private readonly T _defaultValue;
@@ -31,7 +31,7 @@ internal sealed class SettingEntryImpl<T> : ISettingEntry
     public bool IsDefault => EqualityComparer<T>.Default.Equals(_value, _defaultValue);
 
     public SettingEntryImpl(string id, T defaultValue, TextRef displayName, TextRef description,
-        SettingUiType uiType, ISettingConstraint? constraint)
+        SettingUiType uiType, ISettingConstraint constraint)
     {
         Id = id;
         _defaultValue = defaultValue;

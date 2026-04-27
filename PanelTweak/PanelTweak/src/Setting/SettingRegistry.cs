@@ -73,65 +73,12 @@ public sealed class SettingRegistry : ISettingsSource
         _entries[entry.Id] = entry;
         _entryList.Add(entry);
     }
-    
-    internal SettingEntryHandle<bool> RegisterBool(
-        string ownerId, string key, bool defaultValue,
-        TextRef? displayName = null, TextRef? description = null,
-        string tabId = null, string groupId = null)
-    {
-        return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Toggle, constraint: null);
-    }
 
-    internal SettingEntryHandle<float> RegisterFloat(
-        string ownerId, string key, float defaultValue,
-        TextRef? displayName = null, TextRef? description = null,
-        string tabId = null, string groupId = null,
-        float min = float.MinValue, float max = float.MaxValue, float step = 0f)
-    {
-        var range = new RangeConstraint(min, max, step, typeof(float));
-        return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Slider, range);
-    }
-
-    internal SettingEntryHandle<int> RegisterInt(
-        string ownerId, string key, int defaultValue,
-        TextRef? displayName = null, TextRef? description = null,
-        string tabId = null, string groupId = null,
-        int min = int.MinValue, int max = int.MaxValue, int step = 1)
-    {
-        var range = new RangeConstraint(min, max, step, typeof(int));
-        return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Slider, range);
-    }
-
-    internal SettingEntryHandle<T> RegisterEnum<T>(
+    public SettingEntryHandle<T> Register<T>(
         string ownerId, string key, T defaultValue,
-        TextRef? displayName = null, TextRef? description = null,
-        string tabId = null, string groupId = null) where T : Enum
-    {
-        var options = Enum.GetValues(typeof(T)).Cast<T>()
-            .Select(v => new SettingOption(v, v.ToString())).ToList();
-        var constraint = new OptionsConstraint(options, typeof(T));
-        return Register(ownerId, key, defaultValue, displayName, description,
-            tabId, groupId, SettingUiType.Dropdown, constraint);
-    }
-
-    internal SettingEntryHandle<KeyCode> RegisterKeybind(
-        string ownerId, string key, KeyCode defaultValue,
-        TextRef? displayName = null, TextRef? description = null,
-        string tabId = null, string groupId = null)
-    {
-        return Register(ownerId, key, defaultValue, displayName, description,
-            tabId ?? ControlsTabId, groupId, SettingUiType.Keybind, null);
-    }
-
-    // 核心泛型注册方法
-    private SettingEntryHandle<T> Register<T>(
-        string ownerId, string key, T defaultValue,
-        TextRef? displayName, TextRef? description,
-        string tabId, string groupId,
-        SettingUiType uiType, ISettingConstraint? constraint)
+        IHint hint = null,
+        string tabId = null, string groupId = null,
+        TextRef? displayName = null, TextRef? description = null)
     {
         EnsureNotSealed();
         if (string.IsNullOrEmpty(ownerId))
@@ -141,15 +88,54 @@ public sealed class SettingRegistry : ISettingsSource
 
         var id = $"{ownerId}.{key}";
 
+        // 自动推断 UI 类型和约束
+        SettingUiType uiType;
+        ISettingConstraint constraint = null;
+
+        if (typeof(T) == typeof(bool))
+        {
+            uiType = SettingUiType.Toggle;
+        }
+        else if (hint is RangeHint<T> range)
+        {
+            float min = Convert.ToSingle(range.Min);
+            float max = Convert.ToSingle(range.Max);
+            float step = Convert.ToSingle(range.Step);
+            constraint = new RangeConstraint(min, max, step, typeof(T));
+            uiType = SettingUiType.Slider;
+        }
+        else if (hint is OptionsHint<T> options)
+        {
+            var optsList = options.Values
+                .Select(v => new SettingOption(v!, v!.ToString()))
+                .ToList();
+            constraint = new OptionsConstraint(optsList, typeof(T));
+            uiType = SettingUiType.Dropdown;
+        }
+        else if (typeof(T).IsEnum)
+        {
+            var optsList = Enum.GetValues(typeof(T)).Cast<object>()
+                .Select(v => new SettingOption(v, v.ToString()))
+                .ToList();
+            constraint = new OptionsConstraint(optsList, typeof(T));
+            uiType = SettingUiType.Dropdown;
+        }
+        else
+        {
+            throw new ArgumentException(
+                $"Cannot infer UI type for '{typeof(T).Name}'. " +
+                "Provide a RangeHint, OptionsHint, or use bool/enum.");
+        }
+
         // 自动推导 Tab
         if (string.IsNullOrEmpty(tabId))
         {
-            tabId = uiType == SettingUiType.Keybind ? ControlsTabId : ModsTabId;
+            tabId = ModsTabId;
         }
         else
         {
             if (!_tabs.ContainsKey(tabId))
-                RegisterTabInternal(tabId, tabId); // 如果未注册则自动创建，降级 display name
+                RegisterTabInternal(tabId, tabId);
         }
 
         // 自动 Group
