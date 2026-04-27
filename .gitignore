@@ -1,8 +1,10 @@
 # IDE配置
 **/.idea
-**/.claude
 **/.vs
 **.sln.DotSettings.user
+# AI工具
+**/.claude
+**/CLAUDE.md
 # 项目输出
 **/bin
 **/obj
