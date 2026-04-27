@@ -44,7 +44,7 @@ public static class Setting
 
         public SettingBuilder Tab(string tabId, TextRef? displayName = null)
         {
-            if (_reg.Tabs.All(t => t.Id != tabId))
+            if (_reg.AllTabs.All(t => t.Id != tabId))
                 _reg.RegisterTab(tabId, displayName ?? tabId);
             _tabId = tabId;
             return this;
@@ -59,10 +59,14 @@ public static class Setting
         }
 
         public SettingEntry<T> Add<T>(
-            string key, T defaultValue,
-            IHint hint = null,
+            string key, T defaultValue, IHint hint = null,
             TextRef? displayName = null, TextRef? description = null)
             => _reg.Register(_namespace, key, defaultValue, hint,
+                _tabId, _groupId, displayName, description);
+
+        public SettingEntry<T> Add<T>(ConfigEntry<T> configEntry,
+            TextRef? displayName = null, TextRef? description = null) where T : IEquatable<T>
+            => RegisterConfigEntry(_namespace, configEntry,
                 _tabId, _groupId, displayName, description);
     }
     
@@ -83,7 +87,7 @@ public static class Setting
             _ => null
         };
 
-        var entry = Setting.Registry.Register(
+        var entry = Registry.Register(
             @namespace, $"{configEntry.Definition.Section}.{configEntry.Definition.Key}", 
             configEntry.Value, hint, tabId, groupId, 
             displayName ?? configEntry.Definition.Key, 

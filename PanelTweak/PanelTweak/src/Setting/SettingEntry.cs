@@ -11,6 +11,8 @@ public sealed class SettingEntry<T> : ISettingEntry
     public Type ValueType => typeof(T);
     public SettingUiType UiType { get; }
     public ISettingConstraint Constraint { get; }
+    public ISettingTab Tab { get; }
+    public ISettingGroup Group { get; }
 
     private T _value;
     private readonly T _defaultValue;
@@ -27,16 +29,20 @@ public sealed class SettingEntry<T> : ISettingEntry
 
     public bool IsDefault => EqualityComparer<T>.Default.Equals(_value, _defaultValue);
 
-    internal SettingEntry(string id, T defaultValue, TextRef displayName, TextRef description,
-        SettingUiType uiType, ISettingConstraint constraint)
+    internal SettingEntry(
+        string id, T defaultValue, ISettingConstraint constraint,
+        ISettingTab tab, ISettingGroup group, SettingUiType uiType,
+        TextRef displayName, TextRef description)
     {
         Id = id;
         _defaultValue = defaultValue;
         _value = defaultValue;
+        Constraint = constraint;
+        Tab = tab;
+        Group = group;
+        UiType = uiType;
         DisplayName = displayName;
         Description = description;
-        UiType = uiType;
-        Constraint = constraint;
     }
 
     public void ResetToDefault()

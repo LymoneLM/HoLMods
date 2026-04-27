@@ -23,7 +23,7 @@ internal sealed class ES3SettingsStore : ISettingsStore
             return;
 
         var dict = ES3.Load(_key, _filePath, new Dictionary<string, string>());
-        foreach (var entry in registry.GetAllEntries())
+        foreach (var entry in registry.AllSettings)
         {
             if (dict.TryGetValue(entry.Id, out var stringValue))
             {
@@ -41,7 +41,8 @@ internal sealed class ES3SettingsStore : ISettingsStore
 
         // 保存所有未知键（卸载 Mod 后配置不丢失）
         var currentIds = new HashSet<string>();
-        foreach (var e in registry.GetAllEntries()) currentIds.Add(e.Id);
+        foreach (var e in registry.AllSettings) 
+            currentIds.Add(e.Id);
         foreach (var kv in dict)
             if (!currentIds.Contains(kv.Key))
                 CacheUnknownEntry(kv.Key, kv.Value);
@@ -52,7 +53,7 @@ internal sealed class ES3SettingsStore : ISettingsStore
     public void Save(SettingRegistry registry)
     {
         var dict = new Dictionary<string, string>();
-        foreach (var entry in registry.GetAllEntries())
+        foreach (var entry in registry.AllSettings)
         {
             dict[entry.Id] = StringifyValue(entry.BoxedValue);
         }

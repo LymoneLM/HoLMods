@@ -25,9 +25,9 @@ internal sealed class SettingRegistry : ISettingsSource
         RegisterTab(ControlsTabId, TextRef.Key("settings.tab.controls", "Controls"));
     }
 
-    public IReadOnlyList<ISettingTab> Tabs => _tabList.AsReadOnly();
+    public IReadOnlyList<ISettingTab> AllTabs => _tabList.AsReadOnly();
     public IReadOnlyList<ISettingGroup> AllGroups => _groupList.AsReadOnly();
-    public IReadOnlyList<ISettingEntry> GetAllSettings() => _entryList.AsReadOnly();
+    public IReadOnlyList<ISettingEntry> AllSettings => _entryList.AsReadOnly();
     public ISettingEntry GetSetting(string id) => _entries.TryGetValue(id, out var e) ? e : null;
 
     public void RegisterTab(string tabId, TextRef displayName)
@@ -62,8 +62,7 @@ internal sealed class SettingRegistry : ISettingsSource
     }
 
     public SettingEntry<T> Register<T>(
-        string @namespace, string key, T defaultValue,
-        IHint hint = null,
+        string @namespace, string key, T defaultValue, IHint hint = null,
         string tabId = null, string groupId = null,
         TextRef? displayName = null, TextRef? description = null)
     {
@@ -72,13 +71,21 @@ internal sealed class SettingRegistry : ISettingsSource
             throw new ArgumentNullException(nameof(@namespace));
         if (string.IsNullOrEmpty(key))
             throw new ArgumentNullException(nameof(key));
+        
+        var (uiType, constraint) = GetUiType<T>(hint);
+        var entry = new SettingEntry<T>(
+            $"{@namespace}.{key}", defaultValue, constraint,
+            GetTab(tabId), GetGroup(groupId), uiType,
+            displayName ?? key, description ?? "");
+        
+        Register(entry);
+        return entry;
+    }
 
-        var id = $"{@namespace}.{key}";
-
-        // 自动推断 UI 类型和约束
+    private static (SettingUiType, ISettingConstraint) GetUiType<T>(IHint hint)
+    {
         SettingUiType uiType;
         ISettingConstraint constraint = null;
-
         if (typeof(T) == typeof(bool))
         {
             uiType = SettingUiType.Toggle;
@@ -94,7 +101,7 @@ internal sealed class SettingRegistry : ISettingsSource
         else if (hint is OptionsHint<T> options)
         {
             var optsList = options.Values
-                .Select(v => new SettingOption(v!, v!.ToString()))
+                .Select(v => new SettingOption(v, v.ToString()))
                 .ToList();
             constraint = new OptionsConstraint(optsList, typeof(T));
             uiType = SettingUiType.Dropdown;
@@ -113,31 +120,25 @@ internal sealed class SettingRegistry : ISettingsSource
                 $"Cannot infer UI type for '{typeof(T).Name}'. " +
                 "Provide a RangeHint, OptionsHint, or use bool/enum.");
         }
+        return (uiType, constraint);
+    }
 
-        // 自动推导 Tab
+    private SettingTab GetTab(string tabId)
+    {
         if (string.IsNullOrEmpty(tabId))
-        {
             tabId = ModsTabId;
-        }
-        else
-        {
-            if (!_tabs.ContainsKey(tabId))
-                RegisterTab(tabId, tabId);
-        }
+        if (!_tabs.ContainsKey(tabId))
+            RegisterTab(tabId, tabId);
+        return _tabs[tabId];
+    }
 
-        // 自动 Group
+    private SettingGroup GetGroup(string groupId)
+    {
         if (string.IsNullOrEmpty(groupId))
-            groupId = "general";
+            return null;
         if (!_groups.ContainsKey(groupId))
             RegisterGroup(groupId, groupId);
-
-        // TODO: 处理Entry与Tab和Group的绑定
-        var entry = new SettingEntry<T>(
-            id, defaultValue,
-            displayName ?? key, description ?? "",
-            uiType, constraint);
-        Register(entry);
-        return entry;
+        return _groups[groupId];
     }
 
     #region Registry State Machine
@@ -158,8 +159,4 @@ internal sealed class SettingRegistry : ISettingsSource
     }
 
     #endregion
-    
-    internal IEnumerable<ISettingEntry> GetAllEntries() => _entryList;
-    
-
 }

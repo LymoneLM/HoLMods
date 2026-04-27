@@ -8,12 +8,18 @@ public interface ISettingEntry
     string Id { get; }
     TextRef DisplayName { get; }
     TextRef Description { get; }
+    
     Type ValueType { get; }
     object BoxedValue { get; set; }
     object BoxedDefaultValue { get; }
     bool IsDefault { get; }
+    
     SettingUiType UiType { get; }
     ISettingConstraint? Constraint { get; }
+    
+    ISettingTab Tab { get; }
+    ISettingGroup Group { get; }
+    
     void ResetToDefault();
     bool TrySetValue(object value, out string error);
 }

@@ -5,8 +5,8 @@ namespace PanelTweak;
 
 public interface ISettingsSource
 {
-    IReadOnlyList<ISettingTab> Tabs { get; }
+    IReadOnlyList<ISettingTab> AllTabs { get; }
     IReadOnlyList<ISettingGroup> AllGroups { get; }
-    IReadOnlyList<ISettingEntry> GetAllSettings();
+    IReadOnlyList<ISettingEntry> AllSettings { get; }
     ISettingEntry? GetSetting(string id);
 }
